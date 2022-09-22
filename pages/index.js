@@ -1,3 +1,4 @@
+import { getCookie, setCookie } from "cookies-next";
 import SplunkThemeProvider from "@splunk/themes/SplunkThemeProvider";
 import dynamic from "next/dynamic";
 import React, { useCallback, useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import Success from "@splunk/react-icons/Success";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import AppInspectTags from "./components/AppInspectTags";
+import AppinspectReportTab from "./components/AppinspectReportTab";
 import Dropdown from "@splunk/react-ui/Dropdown";
 import Menu from "@splunk/react-ui/Menu";
 
@@ -183,6 +185,8 @@ export default function Home() {
   const [theme, setMode] = useState("light");
 
   useEffect(() => {
+    // setToken(getCookie("token"));
+
     // Add listener to update styles
     window
       .matchMedia("(prefers-color-scheme: dark)")
@@ -233,6 +237,7 @@ export default function Home() {
         if (data.data === undefined) {
           setLoginError(data.msg);
         } else {
+          setCookie("token", data.data.token);
           setToken(data.data.token);
           setFullName(data.data.user.name);
 
@@ -730,8 +735,19 @@ export default function Home() {
                         </p>
                       </Card>
                     </TabLayout.Panel>
-                    <TabLayout.Panel
-                      label={"Errors - " + String(finalReport.summary.error)}
+
+                    <AppinspectReportTab
+                      icon={<Error style={{ color: "#A80000" }} />}
+                      disabled={finalReport.summary.error == 0 ? true : false}
+                      count={finalReport.summary.error}
+                      label="Errors"
+                      panel_id="error"
+                      check_result="error"
+                      finalreport_groups={finalReport.reports[0].groups}
+                    ></AppinspectReportTab>
+
+                    {/*<TabLayout.Panel
+                      label={"Errors"}
                       panelId="error"
                       icon={<Error style={{ color: "#A80000" }} />}
                       disabled={finalReport.summary.error == 0 ? true : false}
@@ -808,8 +824,19 @@ export default function Home() {
                       ) : (
                         <></>
                       )}
-                    </TabLayout.Panel>
-                    <TabLayout.Panel
+                      </TabLayout.Panel>*/}
+
+                    <AppinspectReportTab
+                      icon={<Error style={{ color: "#A80000" }} />}
+                      disabled={finalReport.summary.failure == 0 ? true : false}
+                      count={finalReport.summary.failure}
+                      label="Failures"
+                      panel_id="failure"
+                      check_result="failure"
+                      finalreport_groups={finalReport.reports[0].groups}
+                    ></AppinspectReportTab>
+
+                    {/*<TabLayout.Panel
                       label="Failures"
                       panelId="failure"
                       icon={<Error style={{ color: "#A80000" }} />}
@@ -887,8 +914,21 @@ export default function Home() {
                       ) : (
                         <></>
                       )}
-                    </TabLayout.Panel>
-                    <TabLayout.Panel
+                      </TabLayout.Panel>*/}
+
+                    <AppinspectReportTab
+                      icon={<Warning style={{ color: "#A05F04" }} />}
+                      disabled={
+                        finalReport.summary.manual_check == 0 ? true : false
+                      }
+                      count={finalReport.summary.manual_check}
+                      label="Manual Checks"
+                      panel_id="manual_check"
+                      check_result="manual_check"
+                      finalreport_groups={finalReport.reports[0].groups}
+                    ></AppinspectReportTab>
+
+                    {/*<TabLayout.Panel
                       label="Manual Checks"
                       panelId="manual_check"
                       icon={<Warning style={{ color: "#A05F04" }} />}
@@ -968,8 +1008,17 @@ export default function Home() {
                       ) : (
                         <></>
                       )}
-                    </TabLayout.Panel>
-                    <TabLayout.Panel
+                      </TabLayout.Panel>*/}
+                    <AppinspectReportTab
+                      icon={<Warning style={{ color: "#A05F04" }} />}
+                      disabled={finalReport.summary.warning == 0 ? true : false}
+                      count={finalReport.summary.warning}
+                      label="Warnings"
+                      panel_id="warning"
+                      check_result="warning"
+                      finalreport_groups={finalReport.reports[0].groups}
+                    ></AppinspectReportTab>
+                    {/* <TabLayout.Panel
                       label="Warnings"
                       panelId="warning"
                       icon={<Warning style={{ color: "#A05F04" }} />}
@@ -1047,8 +1096,20 @@ export default function Home() {
                       ) : (
                         <></>
                       )}
-                    </TabLayout.Panel>
-                    <TabLayout.Panel
+                    </TabLayout.Panel>*/}
+
+                    <AppinspectReportTab
+                      icon={<InfoCircle style={{ color: "#004FA8" }} />}
+                      disabled={
+                        finalReport.summary.not_applicable == 0 ? true : false
+                      }
+                      count={finalReport.summary.not_applicable}
+                      label="Not Applicable"
+                      panel_id="not_applicable"
+                      check_result="not_applicable"
+                      finalreport_groups={finalReport.reports[0].groups}
+                    ></AppinspectReportTab>
+                    {/*<TabLayout.Panel
                       label="Not Applicable"
                       panelId="not_applicable"
                       icon={<InfoCircle style={{ color: "#004FA8" }} />}
@@ -1128,8 +1189,19 @@ export default function Home() {
                       ) : (
                         <></>
                       )}
-                    </TabLayout.Panel>
-                    <TabLayout.Panel
+                      </TabLayout.Panel>*/}
+
+                    <AppinspectReportTab
+                      icon={<InfoCircle style={{ color: "#004FA8" }} />}
+                      disabled={finalReport.summary.skipped == 0 ? true : false}
+                      count={finalReport.summary.skipped}
+                      label="Skipped"
+                      panel_id="skipped"
+                      check_result="skipped"
+                      finalreport_groups={finalReport.reports[0].groups}
+                    ></AppinspectReportTab>
+
+                    {/*<TabLayout.Panel
                       label="Skipped"
                       panelId="skipped"
                       icon={<InfoCircle style={{ color: "#004FA8" }} />}
@@ -1207,8 +1279,19 @@ export default function Home() {
                       ) : (
                         <></>
                       )}
-                    </TabLayout.Panel>
-                    <TabLayout.Panel
+                      </TabLayout.Panel>*/}
+
+                    <AppinspectReportTab
+                      icon={<Success style={{ color: "#407A06" }} />}
+                      disabled={finalReport.summary.success == 0 ? true : false}
+                      count={finalReport.summary.success}
+                      label="Successes"
+                      panel_id="success"
+                      check_result="success"
+                      finalreport_groups={finalReport.reports[0].groups}
+                    ></AppinspectReportTab>
+
+                    {/*<TabLayout.Panel
                       label={
                         "Successes - " + String(finalReport.summary.success)
                       }
@@ -1292,7 +1375,7 @@ export default function Home() {
                       ) : (
                         <></>
                       )}
-                    </TabLayout.Panel>
+                      </TabLayout.Panel>*/}
                   </TabLayout>
                 </div>
               </div>
