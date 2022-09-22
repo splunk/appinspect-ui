@@ -9,6 +9,10 @@ const File = dynamic(() => import('@splunk/react-ui/File'), {
     ssr: false,
 });
 
+const Button = dynamic(() => import('@splunk/react-ui/Button'), {
+    ssr: false,
+});
+
 const Text = dynamic(() => import('@splunk/react-ui/Text'), {
     ssr: false,
 });
@@ -23,7 +27,9 @@ export default function Home() {
     const [children, setChildren] = useState(<></>);
     const [password, setPassword] = useState();
     const [username, setUsername] = useState();
+    const [token, setToken] = useState();
 
+    /* Authentication Functions */
     const updatePassword = (e) => {
         setPassword(e.target.value);
     };
@@ -32,10 +38,25 @@ export default function Home() {
         setUsername(e.target.value);
     };
 
-    const submitForm = (e) => {
+    const login = (e) => {
         e.preventDefault();
-        console.log(e.target);
+
+        fetch('/api/authsplunkapi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+
+            body: JSON.stringify({
+                username: username,
+                password: password,
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                setToken(data.data.token);
+            });
     };
+
+    /* File Reader Functions */
     function loadFile(file) {
         const fileItem = { name: file.name };
 
@@ -45,11 +66,6 @@ export default function Home() {
         };
         fileReader.readAsDataURL(file);
 
-        const children_local = filesArray.map((item) => (
-            <File.Item itemId={item.name} name={item.name} key={item.name} />
-        ));
-
-        setChildren(children_local);
         return fileItem;
     }
 
@@ -65,6 +81,23 @@ export default function Home() {
         setFiles(files);
     };
 
+    /* Validation Functions */
+    const validateApps = (e) => {
+        for (var item in filesArray) {
+            fetch('/api/validateapp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify({
+                    token: token,
+                    value: filesArray[item].value,
+                    filename: filesArray[item].name,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => console.log(data));
+        }
+    };
     return (
         <SplunkThemeProvider family="prisma" colorScheme="dark" density="comfortable">
             <ColumnLayout>
@@ -82,7 +115,7 @@ export default function Home() {
                         Enter Your Username and Password for Splunk.com
                     </Heading>
                     <br />
-                    <form onsubmit={(e) => submitForm(e)}>
+                    <form onSubmit={(e) => login(e)}>
                         <Text
                             defaultValue=""
                             startAdornment={
@@ -107,14 +140,48 @@ export default function Home() {
                             value={password}
                             onChange={(e) => updatePassword(e)}
                         />
-                        <input type="submit" />
+                        <br />
+                        <br />
+                        <br />
+                        <Button
+                            inline={false}
+                            style={{
+                                marginBottom: '10px',
+                                width: '25%',
+                                textAlign: 'center',
+                                margin: 'auto',
+                            }}
+                            appearance="primary"
+                            label="Login"
+                            type="submit"
+                        />{' '}
                     </form>
                 </div>
             </div>
-            <br />
-            <File onRequestAdd={handleAddFiles} onRequestRemove={handleRemoveFile} allowMultiple>
-                {children}
-            </File>{' '}
+            <>
+                <br />
+                <File
+                    onRequestAdd={handleAddFiles}
+                    onRequestRemove={handleRemoveFile}
+                    allowMultiple
+                >
+                    {children}
+                </File>{' '}
+                <br />
+                <Button
+                    inline={false}
+                    style={{
+                        marginBottom: '10px',
+                        width: '25%',
+                        textAlign: 'center',
+                        margin: 'auto',
+                    }}
+                    appearance="primary"
+                    label="Validate App(s)"
+                    type="submit"
+                    onClick={validateApps}
+                />{' '}
+            </>
         </SplunkThemeProvider>
     );
 }
