@@ -17,18 +17,114 @@ const Text = dynamic(() => import('@splunk/react-ui/Text'), {
     ssr: false,
 });
 
+const JSONTree = dynamic(() => import('@splunk/react-ui/JSONTree'), {
+    ssr: false,
+});
+
+const WaitSpinner = dynamic(() => import('@splunk/react-ui/WaitSpinner'), {
+    ssr: false,
+});
+
 const colStyle = {
     padding: 10,
     minHeight: 80,
 };
 
+// Returns a Promise that resolves after "ms" Milliseconds
+const timer = (ms) => new Promise((response) => setTimeout(response, ms));
+
+async function checkstatus(
+    token,
+    request_id,
+    elapsed,
+    setElapsed,
+    finalReport,
+    setFinalReport,
+    reportStatus,
+    validationStatus,
+    setValidationStatus,
+    setIsValidating
+) {
+    var status = '';
+    var elapsed = 0;
+    var sleep_seconds = 2;
+    while (true) {
+        elapsed = elapsed + sleep_seconds;
+        setElapsed(elapsed);
+
+        //Now that we have a valid request ID, let's sleep and loop until our result is complete.
+        status = await fetch('/api/getreportstatus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+
+            body: JSON.stringify({
+                token: token,
+                request_id: request_id,
+            }),
+        })
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                }
+                throw res;
+            })
+            .then((json) => {
+                return json;
+            });
+
+        if (status.status == 'PROCESSING') {
+            await timer(3000);
+        }
+        if (status.status == 'SUCCESS') {
+            console.log('Successfully processed App');
+            fetch('/api/getreport', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify({
+                    token: token,
+                    request_id: request_id,
+                }),
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        return res.json();
+                    }
+                    throw res;
+                })
+                .then((json) => {
+                    setFinalReport(json);
+                    setValidationStatus(false);
+                });
+            break;
+        }
+    }
+    return status;
+}
+
 export default function Home() {
     const [filesArray, setFiles] = useState([]);
+
+    //Authentication
     const [children, setChildren] = useState(<></>);
     const [password, setPassword] = useState();
     const [username, setUsername] = useState();
     const [token, setToken] = useState();
-    const [validationStatus, setValidationStatus] = useState();
+
+    //Request
+
+    //Get ID
+    const [requestID, setRequestID] = useState({});
+
+    //Get Final Report
+    const [finalReport, setFinalReport] = useState({});
+
+    //Get Validation Status
+    const [validationStatus, setValidationStatus] = useState({});
+
+    //Process Status
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const [isValidating, setIsValidating] = useState(false);
 
     /* Authentication Functions */
     const updatePassword = (e) => {
@@ -97,10 +193,25 @@ export default function Home() {
             })
                 .then((response) => response.json())
                 .then((data) => {
-                    setValidationStatus(data);
+                    if (data.request_id) {
+                        setRequestID(data);
+                        setIsValidating(true);
+                        checkstatus(
+                            token,
+                            data.request_id,
+                            elapsedTime,
+                            setElapsedTime,
+                            finalReport,
+                            setFinalReport,
+                            validationStatus,
+                            setValidationStatus,
+                            setIsValidating
+                        );
+                    }
                 });
         }
     };
+
     return (
         <SplunkThemeProvider family="prisma" colorScheme="dark" density="comfortable">
             <ColumnLayout>
@@ -112,80 +223,103 @@ export default function Home() {
                     <ColumnLayout.Column style={colStyle} span={10}></ColumnLayout.Column>
                 </ColumnLayout.Row>
             </ColumnLayout>
-            <div style={{ width: '100%', display: 'block' }}>
-                <div style={{ margin: 'auto', textAlign: 'center' }}>
-                    <Heading level={2} style={{ margin: 'auto', textAlign: 'center' }}>
-                        Enter Your Username and Password for Splunk.com
-                    </Heading>
-                    <br />
-                    <form onSubmit={(e) => login(e)}>
-                        <Text
-                            defaultValue=""
-                            startAdornment={
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        padding: '0 8px',
-                                    }}
+            {!isValidating ? (
+                <>
+                    {!token ? (
+                        <div style={{ width: '100%', display: 'block' }}>
+                            <div style={{ margin: 'auto', textAlign: 'center' }}>
+                                <Heading level={2} style={{ margin: 'auto', textAlign: 'center' }}>
+                                    Enter Your Username and Password for Splunk.com
+                                </Heading>
+                                <br />
+                                <form onSubmit={(e) => login(e)}>
+                                    <Text
+                                        defaultValue=""
+                                        startAdornment={
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '0 8px',
+                                                }}
+                                            >
+                                                <User size={1} />
+                                            </div>
+                                        }
+                                        value={username}
+                                        onChange={(e) => updateUsername(e)}
+                                        inline
+                                        placeholder="Username"
+                                    />
+                                    <Text
+                                        inline
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => updatePassword(e)}
+                                    />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <Button
+                                        inline={false}
+                                        style={{
+                                            marginBottom: '10px',
+                                            width: '25%',
+                                            textAlign: 'center',
+                                            margin: 'auto',
+                                        }}
+                                        appearance="primary"
+                                        label="Login"
+                                        type="submit"
+                                    />{' '}
+                                </form>
+                            </div>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
+
+                    <>
+                        <br />
+                        {token ? (
+                            <>
+                                <File
+                                    onRequestAdd={handleAddFiles}
+                                    onRequestRemove={handleRemoveFile}
+                                    allowMultiple
                                 >
-                                    <User size={1} />
-                                </div>
-                            }
-                            value={username}
-                            onChange={(e) => updateUsername(e)}
-                            inline
-                            placeholder="Username"
-                        />
-                        <Text
-                            inline
-                            type="password"
-                            value={password}
-                            onChange={(e) => updatePassword(e)}
-                        />
-                        <br />
-                        <br />
-                        <br />
-                        <Button
-                            inline={false}
-                            style={{
-                                marginBottom: '10px',
-                                width: '25%',
-                                textAlign: 'center',
-                                margin: 'auto',
-                            }}
-                            appearance="primary"
-                            label="Login"
-                            type="submit"
-                        />{' '}
-                    </form>
-                </div>
-            </div>
-            <>
-                <br />
-                <File
-                    onRequestAdd={handleAddFiles}
-                    onRequestRemove={handleRemoveFile}
-                    allowMultiple
-                >
-                    {children}
-                </File>{' '}
-                <br />
-                <Button
-                    inline={false}
-                    style={{
-                        marginBottom: '10px',
-                        width: '25%',
-                        textAlign: 'center',
-                        margin: 'auto',
-                    }}
-                    appearance="primary"
-                    label="Validate App(s)"
-                    type="submit"
-                    onClick={validateApps}
-                />{' '}
-                <p>{JSON.stringify(validationStatus)}</p>
-            </>
+                                    {children}
+                                </File>{' '}
+                                <br />
+                                <Button
+                                    inline={false}
+                                    style={{
+                                        marginBottom: '10px',
+                                        width: '25%',
+                                        textAlign: 'center',
+                                        margin: 'auto',
+                                    }}
+                                    appearance="primary"
+                                    label="Validate App(s)"
+                                    type="submit"
+                                    onClick={validateApps}
+                                />{' '}
+                            </>
+                        ) : (
+                            <></>
+                        )}
+
+                        <JSONTree json={finalReport}></JSONTree>
+                    </>
+                </>
+            ) : (
+                <>
+                    <div style={{ textAlign: 'center', margin: 'auto' }}>
+                        <p>Elapsed Time is {elapsedTime} Seconds</p>
+                        <WaitSpinner size="large" />
+                    </div>
+                </>
+            )}
         </SplunkThemeProvider>
     );
 }
