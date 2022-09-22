@@ -9,10 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@splunk/react-ui": "^4.12.1",
+    "@splunk/react-ui": "4.4.1",
     "@splunk/themes": "^0.13.0",
     "@splunk/visualizations": "^25.0.1",
     "form-data": "^4.0.0",
+    "form-data-encoder": "^2.1.2",
+    "formdata-node": "^5.0.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "next": "12.3.1",
     "prettier": "^2.7.1",
     "react": "18.2.0",
