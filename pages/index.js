@@ -274,7 +274,9 @@ export default function Home() {
                                     onRequestRemove={handleRemoveFile}
                                     allowMultiple
                                 >
-                                    {children}
+                                    {filesArray.map((key) => {
+                                        return <p>{key.name}</p>;
+                                    })}
                                 </File>{' '}
                                 <br />
                                 <Button
