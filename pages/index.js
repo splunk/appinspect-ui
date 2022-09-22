@@ -1,18 +1,25 @@
 import SplunkThemeProvider from "@splunk/themes/SplunkThemeProvider";
 import dynamic from "next/dynamic";
 import React, { useCallback, useEffect, useState } from "react";
+import Accordion from "@splunk/react-ui/Accordion";
+import DL from "@splunk/react-ui/DefinitionList";
 import User from "@splunk/react-icons/User";
+import Monogram, { getInitials } from "@splunk/react-ui/Monogram";
 import Error from "@splunk/react-icons/Error";
 import Warning from "@splunk/react-icons/Warning";
+import TabLayout from "@splunk/react-ui/TabLayout";
+import List from "@splunk/react-ui/List";
 import InfoCircle from "@splunk/react-icons/InfoCircle";
 import Success from "@splunk/react-icons/Success";
-import TabBar from "@splunk/react-ui/TabBar";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import AppInspectTags from "./components/AppInspectTags";
+import Dropdown from "@splunk/react-ui/Dropdown";
+import Menu from "@splunk/react-ui/Menu";
 
-const List = dynamic(() => import("@splunk/react-ui/List"), {
-  ssr: false,
-});
+// const List = dynamic(() => import("@splunk/react-ui/List"), {
+//   ssr: false,
+// });
 
 const Heading = dynamic(() => import("@splunk/react-ui/Heading"), {
   ssr: false,
@@ -22,9 +29,20 @@ const P = dynamic(() => import("@splunk/react-ui/Paragraph"), {
   ssr: false,
 });
 
-const DL = dynamic(() => import("@splunk/react-ui/DefinitionList"), {
+const CollapsiblePanel = dynamic(
+  () => import("@splunk/react-ui/CollapsiblePanel"),
+  {
+    ssr: false,
+  }
+);
+
+const Chip = dynamic(() => import("@splunk/react-ui/Chip"), {
   ssr: false,
 });
+
+// const DL = dynamic(() => import("@splunk/react-ui/DefinitionList"), {
+//   ssr: false,
+// });
 
 const Message = dynamic(() => import("@splunk/react-ui/Message"), {
   ssr: false,
@@ -45,6 +63,14 @@ const File = dynamic(() => import("@splunk/react-ui/File"), {
 const Button = dynamic(() => import("@splunk/react-ui/Button"), {
   ssr: false,
 });
+
+// const TabLayout = dynamic(() => import("@splunk/react-ui/TabLayout"), {
+//   ssr: false,
+// });
+
+// const Table = dynamic(() => import("@splunk/react-ui/Table"), {
+//   ssr: false,
+// });
 
 const Text = dynamic(() => import("@splunk/react-ui/Text"), {
   ssr: false,
@@ -136,14 +162,11 @@ async function checkstatus(
 }
 
 export default function Home() {
-  const [filesArray, setFiles] = useState([]);
-
   //Authentication
   const [password, setPassword] = useState();
   const [username, setUsername] = useState();
   const [fullName, setFullName] = useState();
   const [loginError, setLoginError] = useState();
-
   const [token, setToken] = useState();
 
   //Get Final Report
@@ -153,9 +176,8 @@ export default function Home() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-
-  // Tabs
-  const [activeTabId, setActiveTabId] = useState("one");
+  const [selectedTags, setSelectedTags] = useState(["cloud"]);
+  const [filesArray, setFiles] = useState([]);
 
   // Dark mode detection
   const [theme, setMode] = useState("light");
@@ -214,18 +236,17 @@ export default function Home() {
           setToken(data.data.token);
           setFullName(data.data.user.name);
 
-          setIsValidating(true);
-
-          if (username == "iamthemcmaster") {
-            checkstatus(
-              data.data.token,
-              "2abfb848-e888-43fe-a239-f7e0df60cdb2",
-              elapsedTime,
-              setElapsedTime,
-              setFinalReport,
-              setIsValidating
-            );
-          }
+          // if (username == "iamthemcmaster") {
+          //   setIsValidating(true);
+          //   checkstatus(
+          //     data.data.token,
+          //     "2abfb848-e888-43fe-a239-f7e0df60cdb2",
+          //     elapsedTime,
+          //     setElapsedTime,
+          //     setFinalReport,
+          //     setIsValidating
+          //   );
+          // }
         }
       });
   };
@@ -255,6 +276,10 @@ export default function Home() {
     setFiles(files);
   };
 
+  const handleSelectTags = (e, { values }) => {
+    setSelectedTags(values);
+  };
+
   /* Validation Functions */
   const validateApps = (e) => {
     for (var item in filesArray) {
@@ -266,6 +291,7 @@ export default function Home() {
           token: token,
           value: filesArray[item].value,
           filename: filesArray[item].name,
+          included_tags: selectedTags,
         }),
       })
         .then((response) => response.json())
@@ -285,6 +311,16 @@ export default function Home() {
     }
   };
 
+  const refreshPage = (e) => {
+    console.log("Refreshing");
+    setElapsedTime(0);
+    setIsLoggingIn(false);
+    setIsValidating(false);
+    setSelectedTags(["cloud"]);
+    setFiles([]);
+    setFinalReport({});
+  };
+
   const printDocument = (e) => {
     const input = document.getElementById("report");
     html2canvas(input).then((canvas) => {
@@ -295,34 +331,89 @@ export default function Home() {
     });
   };
 
-  const handleChange = useCallback((e, { selectedTabId }) => {
-    setActiveTabId(selectedTabId);
-  }, []);
+  if (fullName) {
+    var monogram = (
+      <span
+        style={{
+          fontSize: "50px",
+          marginLeft: "20px",
+          verticalAlign: "middle",
+          display: "inline-block",
+        }}
+      >
+        <Monogram
+          style={{
+            margin: "10px",
+          }}
+          backgroundColor="auto"
+          initials={getInitials(fullName)}
+        />{" "}
+      </span>
+    );
+  } else {
+    var monogram = null;
+  }
+
   return (
     <SplunkThemeProvider
       family="prisma"
       colorScheme={theme}
       density="comfortable"
     >
-      <Heading style={{ padding: "10px" }} level={1}>
-        Splunk Appinspect
-      </Heading>
-
-      <P
-        style={{ padding: "10px", textAlign: "ceter", width: "50%" }}
-        level={2}
-      >
-        Are you ready to start validating your Splunk App for{" "}
-        <Link target="_new" to="https://splunkbase.splunk.com">
-          Splunkbase
-        </Link>
-        ? If so
-      </P>
-
       {fullName ? (
-        <Heading style={{ padding: "10px" }} level={2}>
-          Welcome, {fullName}
+        <div>
+          <Dropdown toggle={monogram}>
+            <Menu style={{ width: 200 }}>
+              <Menu.Item>{fullName}</Menu.Item>
+              <Menu.Item>
+                <Link to="/">Sign-out</Link>
+              </Menu.Item>
+            </Menu>
+          </Dropdown>
+        </div>
+      ) : (
+        <></>
+      )}
+      <br />
+      <div style={{ width: "100%" }}>
+        <Heading
+          style={{
+            padding: "10px",
+            paddingTop: "0px",
+            marginTop: "0px",
+            textAlign: "center",
+            clear: "both",
+          }}
+          level={1}
+        >
+          Splunk Appinspect
         </Heading>
+      </div>
+      {!token ? (
+        <>
+          <div
+            style={{ textAlign: "center", justify: "center", margin: "auto" }}
+          >
+            <img
+              src="/wizard.svg"
+              style={{ textAlign: "center", justify: "center", margin: "auto" }}
+            ></img>
+          </div>
+          <P style={{ padding: "10px", textAlign: "center" }} level={2}>
+            Are you ready to start validating your Splunk App for{" "}
+            <Link target="_new" to="https://splunkbase.splunk.com">
+              Splunkbase
+            </Link>{" "}
+            or{" "}
+            <Link
+              target="_new"
+              to="https://www.splunk.com/en_us/products/splunk-cloud-platform.html"
+            >
+              Splunk Cloud Platform
+            </Link>
+            ? This is the place for you.
+          </P>
+        </>
       ) : (
         <></>
       )}
@@ -417,33 +508,59 @@ export default function Home() {
             <br />
             {token && finalReport.reports == undefined ? (
               <>
-                <File
-                  onRequestAdd={handleAddFiles}
-                  onRequestRemove={handleRemoveFile}
-                  supportsMessage={
-                    <>
-                      Supports the following Splunk App file types: .gz, .tgz,
-                      .zip, .spl, .tar
-                    </>
-                  }
-                  help={
-                    <>
-                      Learn more about{" "}
-                      <Link
-                        target="_new"
-                        to="https://dev.splunk.com/enterprise/reference/appinspect/appinspectapiepref#Splunk-AppInspect-API"
-                      >
-                        Splunk App File Types
-                      </Link>
-                    </>
-                  }
-
-                  // allowMultiple
+                <AppInspectTags
+                  style={{ textAlign: "center" }}
+                  selector={handleSelectTags}
+                  selectedTags={selectedTags}
+                ></AppInspectTags>
+                <br />
+                <div
+                  style={{
+                    width: "50%",
+                    textAlign: "center",
+                    justifyContent: "center",
+                    margin: "auto",
+                  }}
                 >
-                  {filesArray.map((key) => {
-                    return <p>{key.name}</p>;
-                  })}
-                </File>{" "}
+                  <File
+                    onRequestAdd={handleAddFiles}
+                    onRequestRemove={handleRemoveFile}
+                    supportsMessage={
+                      <>
+                        Supports the following Splunk App file types: .gz, .tgz,
+                        .zip, .spl, .tar
+                      </>
+                    }
+                    help={
+                      <>
+                        Learn more about{" "}
+                        <Link
+                          target="_new"
+                          to="https://dev.splunk.com/enterprise/reference/appinspect/appinspectapiepref#Splunk-AppInspect-API"
+                        >
+                          Splunk App File Types
+                        </Link>
+                      </>
+                    }
+
+                    // allowMultiple
+                  >
+                    {filesArray.map((key) => {
+                      return <p>{key.name}</p>;
+                    })}
+                  </File>
+                </div>{" "}
+                <div style={{ textAlign: "center" }}>
+                  <P style={{ textAlign: "center" }}>
+                    Learn more about{" "}
+                    <Link
+                      target="_new"
+                      to="https://dev.splunk.com/enterprise/reference/appinspect/appinspectapiepref#Splunk-AppInspect-API"
+                    >
+                      Splunk App File Types
+                    </Link>
+                  </P>
+                </div>
                 <br />
                 <Button
                   inline={false}
@@ -465,13 +582,13 @@ export default function Home() {
 
             {finalReport.reports !== undefined ? (
               <div style={{ textAlign: "center", margin: "auto" }}>
-                <Button onClick="window.location.reload();">
+                <Button onClick={(e) => refreshPage(e)}>
                   Ready to upload another app?
                 </Button>
 
                 <Button onClick={(e) => printDocument(e)}>Save Report</Button>
 
-                <div class="report">
+                <div id="report" style={{ "margin-top": 75 }}>
                   <Heading
                     style={{ textAlign: "center", margin: "auto" }}
                     level={1}
@@ -484,120 +601,700 @@ export default function Home() {
                   >
                     {finalReport.reports[0].app_description}
                   </Heading>
-
-                  <CardLayout
-                    cardMaxWidth="50%"
-                    style={{ textAlign: "center", margin: "auto" }}
+                  <TabLayout
+                    style={{
+                      width: "75%",
+                      textAlign: "center",
+                      justify: "center",
+                      margin: "auto",
+                    }}
+                    defaultActivePanelId="info"
                   >
-                    <Card
-                      maxWidth="50%"
-                      style={{ textAlign: "center", margin: "auto" }}
+                    <TabLayout.Panel
+                      label="App Info"
+                      panelId="info"
+                      style={{
+                        textAlign: "center",
+                        justify: "center",
+                        margin: "auto",
+                      }}
                     >
-                      <DL termWidth={150}>
-                        <DL.Term>Author</DL.Term>
-                        <DL.Description>
-                          {finalReport.reports[0].app_author}
-                        </DL.Description>
-                        <DL.Term>Version</DL.Term>
-                        <DL.Description>
-                          {finalReport.reports[0].app_version}
-                        </DL.Description>
-                        <DL.Term>Hash</DL.Term>
-                        <DL.Description>
-                          {finalReport.reports[0].app_hash}
-                        </DL.Description>
-                        <DL.Term>AppInspect Request ID</DL.Term>
-                        <DL.Description>
-                          {finalReport.request_id}
-                        </DL.Description>
-                        <DL.Term>Run Time</DL.Term>
-                        <DL.Description>
-                          {finalReport.reports[0].metrics.start_time}
-                        </DL.Description>
-                        <DL.Term>Execution Time</DL.Term>
-                        <DL.Description>
-                          {finalReport.reports[0].metrics.execution_time}
-                        </DL.Description>
-                        <DL.Term>AppInspect Version</DL.Term>
-                        <DL.Description>
-                          {finalReport.run_parameters.appinspect_version}
-                        </DL.Description>
-                      </DL>
-                    </Card>
-                  </CardLayout>
+                      <Card
+                        minWidth="100%"
+                        style={{
+                          textAlign: "center",
+                          justify: "center",
+                          margin: "auto",
+                        }}
+                      >
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          Author
+                        </Heading>
+                        <p>{finalReport.reports[0].app_author}</p>
 
-                  <CardLayout
-                    cardMaxWidth="50%"
-                    style={{ textAlign: "center", margin: "auto" }}
-                  >
-                    <Card
-                      maxWidth="50%"
-                      style={{ textAlign: "center", margin: "auto" }}
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          Version
+                        </Heading>
+                        <p>{finalReport.reports[0].app_author}</p>
+
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          Hash
+                        </Heading>
+                        <p>{finalReport.reports[0].app_version}</p>
+
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          AppInspect Request ID
+                        </Heading>
+                        <p>{finalReport.reports[0].app_hash}</p>
+
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          Run Time
+                        </Heading>
+                        <p>{finalReport.request_id}</p>
+
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          Execution Time
+                        </Heading>
+                        <p>{Date(finalReport.reports[0].metrics.start_time)}</p>
+
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          AppInspect Version
+                        </Heading>
+                        <p>{finalReport.run_parameters.appinspect_version}</p>
+
+                        <Heading
+                          level={3}
+                          style={{
+                            textAlign: "center",
+                            justify: "center",
+                            margin: "auto",
+                          }}
+                        >
+                          Included Tags
+                        </Heading>
+                        <p>
+                          {finalReport.run_parameters.included_tags.map(
+                            (tag) => (
+                              <Chip>{tag}</Chip>
+                            )
+                          )}
+                        </p>
+                      </Card>
+                    </TabLayout.Panel>
+                    <TabLayout.Panel
+                      label={"Errors - " + String(finalReport.summary.error)}
+                      panelId="error"
+                      icon={<Error style={{ color: "#A80000" }} />}
+                      disabled={finalReport.summary.error == 0 ? true : false}
+                      count={finalReport.summary.error}
                     >
-                      <DL termWidth={150}>
-                        <DL.Term>
-                          <Error style={{ color: "#A80000" }} /> Errors
-                        </DL.Term>
-                        <DL.Description>
-                          {finalReport.summary.error}
-                        </DL.Description>
-                        <DL.Term>
-                          <Error style={{ color: "#A80000" }} /> Failures
-                        </DL.Term>
-                        <DL.Description>
-                          {finalReport.summary.failure}
-                        </DL.Description>
-                        <DL.Term>
-                          {" "}
-                          <Warning style={{ color: "#A05F04" }} /> Manual Checks
-                        </DL.Term>
-                        <DL.Description>
-                          {finalReport.summary.manual_check}
-                        </DL.Description>
-                        <DL.Term>
-                          <Warning style={{ color: "#A05F04" }} /> Warnings
-                        </DL.Term>
-                        <DL.Description>
-                          {finalReport.summary.warning}
-                        </DL.Description>
-                        <DL.Term>
-                          <InfoCircle style={{ color: "#004FA8" }} /> Not
-                          Applicable
-                        </DL.Term>
-                        <DL.Description>
-                          {finalReport.summary.not_applicable}
-                        </DL.Description>
-                        <DL.Term>
-                          <InfoCircle style={{ color: "#004FA8" }} /> Skipped
-                        </DL.Term>
-                        <DL.Description>
-                          {finalReport.summary.skipped}
-                        </DL.Description>
-                        <DL.Term>
-                          {" "}
-                          <Success style={{ color: "#407A06" }} /> Successes
-                        </DL.Term>
-                        <DL.Description>
-                          {finalReport.summary.success}
-                        </DL.Description>
-                      </DL>
-                    </Card>
-                  </CardLayout>
-                  <TabBar activeTabId={activeTabId} onChange={handleChange}>
-                    <TabBar.Tab label="Tab One" tabId="one" count={1} />
-                    <TabBar.Tab
-                      disabled
-                      label="Tab Two"
-                      tabId="two"
-                      count={13}
-                    />
-                    <TabBar.Tab label="Tab Three" tabId="three" count={0} />
-                    <TabBar.Tab label="Tab Four" tabId="four" count={4} />
-                    <TabBar.Tab label="Tab Five" tabId="five" count={908} />
-                  </TabBar>
+                      {finalReport.summary.error ? (
+                        <Accordion>
+                          {finalReport.reports[0].groups.map((group) => {
+                            return group.checks.map((check) => {
+                              if (check.result == "error") {
+                                return (
+                                  <Accordion.Panel
+                                    panelId={check.name}
+                                    title={check.name}
+                                  >
+                                    <List>
+                                      {check.messages.map((message) => {
+                                        if (
+                                          message.message_line &&
+                                          message.message_filename
+                                        ) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <b>File:</b>{" "}
+                                              {message.message_filename}
+                                              <br />
+                                              <b>Line Number:</b>{" "}
+                                              {message.message_line}
+                                            </List.Item>
+                                          );
+                                        } else if (message.message_filename) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <br />
+                                              <b>File:</b>
+                                              {message.message_filename}
+                                            </List.Item>
+                                          );
+                                        } else {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                            </List.Item>
+                                          );
+                                        }
+                                      })}
+                                    </List>
+                                  </Accordion.Panel>
+                                );
+                              }
+                            });
+                          })}
+                        </Accordion>
+                      ) : (
+                        <></>
+                      )}
+                    </TabLayout.Panel>
+                    <TabLayout.Panel
+                      label="Failures"
+                      panelId="failure"
+                      icon={<Error style={{ color: "#A80000" }} />}
+                      disabled={finalReport.summary.failure == 0 ? true : false}
+                      count={finalReport.summary.failure}
+                    >
+                      {finalReport.summary.failure ? (
+                        <Accordion>
+                          {finalReport.reports[0].groups.map((group) => {
+                            return group.checks.map((check) => {
+                              if (check.result == "failure") {
+                                return (
+                                  <Accordion.Panel
+                                    panelId={check.name}
+                                    title={check.name}
+                                  >
+                                    <List>
+                                      {check.messages.map((message) => {
+                                        if (
+                                          message.message_line &&
+                                          message.message_filename
+                                        ) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <b>File:</b>{" "}
+                                              {message.message_filename}
+                                              <br />
+                                              <b>Line Number:</b>{" "}
+                                              {message.message_line}
+                                            </List.Item>
+                                          );
+                                        } else if (message.message_filename) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <br />
+                                              <b>File:</b>
+                                              {message.message_filename}
+                                            </List.Item>
+                                          );
+                                        } else {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                            </List.Item>
+                                          );
+                                        }
+                                      })}
+                                    </List>
+                                  </Accordion.Panel>
+                                );
+                              }
+                            });
+                          })}
+                        </Accordion>
+                      ) : (
+                        <></>
+                      )}
+                    </TabLayout.Panel>
+                    <TabLayout.Panel
+                      label="Manual Checks"
+                      panelId="manual_check"
+                      icon={<Warning style={{ color: "#A05F04" }} />}
+                      disabled={
+                        finalReport.summary.manual_check == 0 ? true : false
+                      }
+                      count={finalReport.summary.manual_check}
+                    >
+                      {finalReport.summary.manual_check ? (
+                        <Accordion>
+                          {finalReport.reports[0].groups.map((group) => {
+                            return group.checks.map((check) => {
+                              if (check.result == "manual_check") {
+                                return (
+                                  <Accordion.Panel
+                                    panelId={check.name}
+                                    title={check.name}
+                                  >
+                                    <List>
+                                      {check.messages.map((message) => {
+                                        if (
+                                          message.message_line &&
+                                          message.message_filename
+                                        ) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <b>File:</b>{" "}
+                                              {message.message_filename}
+                                              <br />
+                                              <b>Line Number:</b>{" "}
+                                              {message.message_line}
+                                            </List.Item>
+                                          );
+                                        } else if (message.message_filename) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <br />
+                                              <b>File:</b>
+                                              {message.message_filename}
+                                            </List.Item>
+                                          );
+                                        } else {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                            </List.Item>
+                                          );
+                                        }
+                                      })}
+                                    </List>
+                                  </Accordion.Panel>
+                                );
+                              }
+                            });
+                          })}
+                        </Accordion>
+                      ) : (
+                        <></>
+                      )}
+                    </TabLayout.Panel>
+                    <TabLayout.Panel
+                      label="Warnings"
+                      panelId="warning"
+                      icon={<Warning style={{ color: "#A05F04" }} />}
+                      disabled={finalReport.summary.warning == 0 ? true : false}
+                      count={finalReport.summary.warning}
+                    >
+                      {finalReport.summary.warning ? (
+                        <Accordion>
+                          {finalReport.reports[0].groups.map((group) => {
+                            return group.checks.map((check) => {
+                              if (check.result == "warning") {
+                                return (
+                                  <Accordion.Panel
+                                    panelId={check.name}
+                                    title={check.name}
+                                  >
+                                    <List>
+                                      {check.messages.map((message) => {
+                                        if (
+                                          message.message_line &&
+                                          message.message_filename
+                                        ) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <b>File:</b>{" "}
+                                              {message.message_filename}
+                                              <br />
+                                              <b>Line Number:</b>{" "}
+                                              {message.message_line}
+                                            </List.Item>
+                                          );
+                                        } else if (message.message_filename) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <br />
+                                              <b>File:</b>
+                                              {message.message_filename}
+                                            </List.Item>
+                                          );
+                                        } else {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                            </List.Item>
+                                          );
+                                        }
+                                      })}
+                                    </List>
+                                  </Accordion.Panel>
+                                );
+                              }
+                            });
+                          })}
+                        </Accordion>
+                      ) : (
+                        <></>
+                      )}
+                    </TabLayout.Panel>
+                    <TabLayout.Panel
+                      label="Not Applicable"
+                      panelId="not_applicable"
+                      icon={<InfoCircle style={{ color: "#004FA8" }} />}
+                      disabled={
+                        finalReport.summary.not_applicable == 0 ? true : false
+                      }
+                      count={finalReport.summary.not_applicable}
+                    >
+                      {finalReport.summary.not_applicable ? (
+                        <Accordion>
+                          {finalReport.reports[0].groups.map((group) => {
+                            return group.checks.map((check) => {
+                              if (check.result == "not_applicable") {
+                                return (
+                                  <Accordion.Panel
+                                    panelId={check.name}
+                                    title={check.name}
+                                  >
+                                    <List>
+                                      {check.messages.map((message) => {
+                                        if (
+                                          message.message_line &&
+                                          message.message_filename
+                                        ) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <b>File:</b>{" "}
+                                              {message.message_filename}
+                                              <br />
+                                              <b>Line Number:</b>{" "}
+                                              {message.message_line}
+                                            </List.Item>
+                                          );
+                                        } else if (message.message_filename) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <br />
+                                              <b>File:</b>
+                                              {message.message_filename}
+                                            </List.Item>
+                                          );
+                                        } else {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                            </List.Item>
+                                          );
+                                        }
+                                      })}
+                                    </List>
+                                  </Accordion.Panel>
+                                );
+                              }
+                            });
+                          })}
+                        </Accordion>
+                      ) : (
+                        <></>
+                      )}
+                    </TabLayout.Panel>
+                    <TabLayout.Panel
+                      label="Skipped"
+                      panelId="skipped"
+                      icon={<InfoCircle style={{ color: "#004FA8" }} />}
+                      disabled={finalReport.summary.skipped == 0 ? true : false}
+                      count={finalReport.summary.skipped}
+                    >
+                      {finalReport.summary.skipped ? (
+                        <Accordion>
+                          {finalReport.reports[0].groups.map((group) => {
+                            return group.checks.map((check) => {
+                              if (check.result == "skipped") {
+                                return (
+                                  <Accordion.Panel
+                                    panelId={check.name}
+                                    title={check.name}
+                                  >
+                                    <List>
+                                      {check.messages.map((message) => {
+                                        if (
+                                          message.message_line &&
+                                          message.message_filename
+                                        ) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <b>File:</b>{" "}
+                                              {message.message_filename}
+                                              <br />
+                                              <b>Line Number:</b>{" "}
+                                              {message.message_line}
+                                            </List.Item>
+                                          );
+                                        } else if (message.message_filename) {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                              <br />
+                                              <b>File:</b>
+                                              {message.message_filename}
+                                            </List.Item>
+                                          );
+                                        } else {
+                                          return (
+                                            <List.Item>
+                                              <pre
+                                                style={{
+                                                  "white-space": "pre-wrap",
+                                                }}
+                                              >
+                                                {message.message}
+                                              </pre>
+                                            </List.Item>
+                                          );
+                                        }
+                                      })}
+                                    </List>
+                                  </Accordion.Panel>
+                                );
+                              }
+                            });
+                          })}
+                        </Accordion>
+                      ) : (
+                        <></>
+                      )}
+                    </TabLayout.Panel>
+                    <TabLayout.Panel
+                      label={
+                        "Successes - " + String(finalReport.summary.success)
+                      }
+                      panelId="success"
+                      icon={<Success style={{ color: "#407A06" }} />}
+                      disabled={finalReport.summary.success == 0 ? true : false}
+                      count={finalReport.summary.success}
+                    >
+                      {finalReport.summary.success ? (
+                        <Accordion>
+                          {finalReport.reports[0].groups.map((group) => {
+                            return group.checks.map((check) => {
+                              if (check.result == "success") {
+                                return (
+                                  <Accordion.Panel
+                                    panelId={check.name}
+                                    title={check.name}
+                                  >
+                                    {check.messages.length > 0 ? (
+                                      <List>
+                                        {check.messages.map((message) => {
+                                          if (
+                                            message.message_line &&
+                                            message.message_filename
+                                          ) {
+                                            return (
+                                              <List.Item>
+                                                <pre
+                                                  style={{
+                                                    "white-space": "pre-wrap",
+                                                  }}
+                                                >
+                                                  {message.message}
+                                                </pre>
+                                                <b>File:</b>{" "}
+                                                {message.message_filename}
+                                                <br />
+                                                <b>Line Number:</b>{" "}
+                                                {message.message_line}
+                                              </List.Item>
+                                            );
+                                          } else if (message.message_filename) {
+                                            return (
+                                              <List.Item>
+                                                <pre
+                                                  style={{
+                                                    "white-space": "pre-wrap",
+                                                  }}
+                                                >
+                                                  {message.message}
+                                                </pre>
+                                                <br />
+                                                <b>File:</b>
+                                                {message.message_filename}
+                                              </List.Item>
+                                            );
+                                          } else {
+                                            return (
+                                              <List.Item>
+                                                <pre
+                                                  style={{
+                                                    "white-space": "pre-wrap",
+                                                  }}
+                                                >
+                                                  {message.message}
+                                                </pre>
+                                              </List.Item>
+                                            );
+                                          }
+                                        })}
+                                      </List>
+                                    ) : (
+                                      <p>{check.description}</p>
+                                    )}
+                                  </Accordion.Panel>
+                                );
+                              }
+                            });
+                          })}
+                        </Accordion>
+                      ) : (
+                        <></>
+                      )}
+                    </TabLayout.Panel>
+                  </TabLayout>
                 </div>
-
-                <JSONTree json={finalReport}></JSONTree>
               </div>
             ) : (
               <></>
@@ -610,15 +1307,15 @@ export default function Home() {
             <Heading style={{ textAlign: "center", margin: "auto" }} level={2}>
               Validating Splunk App
             </Heading>
-            <p>Elapsed Time is {elapsedTime} Seconds</p>
+            <p>Elapsed Time: {elapsedTime} Seconds</p>
             <WaitSpinner size="large" />
           </div>
         </>
       )}
       <br />
-      <Heading style={{ margin: "auto", textAlign: "center" }} level={4}>
+      <P style={{ margin: "auto", textAlign: "center" }} level={4}>
         © Copyright 2022 Splunk, Inc.
-      </Heading>
+      </P>
     </SplunkThemeProvider>
   );
 }
