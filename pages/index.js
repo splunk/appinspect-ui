@@ -28,6 +28,7 @@ export default function Home() {
     const [password, setPassword] = useState();
     const [username, setUsername] = useState();
     const [token, setToken] = useState();
+    const [validationStatus, setValidationStatus] = useState();
 
     /* Authentication Functions */
     const updatePassword = (e) => {
@@ -95,7 +96,9 @@ export default function Home() {
                 }),
             })
                 .then((response) => response.json())
-                .then((data) => console.log(data));
+                .then((data) => {
+                    setValidationStatus(data);
+                });
         }
     };
     return (
@@ -181,6 +184,7 @@ export default function Home() {
                     type="submit"
                     onClick={validateApps}
                 />{' '}
+                <p>{JSON.stringify(validationStatus)}</p>
             </>
         </SplunkThemeProvider>
     );
