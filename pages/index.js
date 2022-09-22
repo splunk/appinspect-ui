@@ -38,11 +38,7 @@ async function checkstatus(
     request_id,
     elapsed,
     setElapsed,
-    finalReport,
     setFinalReport,
-    reportStatus,
-    validationStatus,
-    setValidationStatus,
     setIsValidating
 ) {
     var status = '';
@@ -94,7 +90,7 @@ async function checkstatus(
                 })
                 .then((json) => {
                     setFinalReport(json);
-                    setValidationStatus(false);
+                    setIsValidating(false);
                 });
             break;
         }
@@ -113,14 +109,8 @@ export default function Home() {
 
     //Request
 
-    //Get ID
-    const [requestID, setRequestID] = useState({});
-
     //Get Final Report
     const [finalReport, setFinalReport] = useState({});
-
-    //Get Validation Status
-    const [validationStatus, setValidationStatus] = useState({});
 
     //Process Status
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -194,17 +184,13 @@ export default function Home() {
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.request_id) {
-                        setRequestID(data);
                         setIsValidating(true);
                         checkstatus(
                             token,
                             data.request_id,
                             elapsedTime,
                             setElapsedTime,
-                            finalReport,
                             setFinalReport,
-                            validationStatus,
-                            setValidationStatus,
                             setIsValidating
                         );
                     }
