@@ -530,9 +530,9 @@ export default function Home() {
                 <table style={{ width: '100%' }}>
                     <tr>
                         <td>
-                            {fullName ? (
-                                <>
-                                    <div>
+                            <div>
+                                {fullName ? (
+                                    <>
                                         <div style={{ float: 'left', width: '33%' }}>
                                             {' '}
                                             <span
@@ -565,33 +565,42 @@ export default function Home() {
                                                 </Popover>
                                             </span>
                                         </div>
-                                        <div
-                                            style={{
-                                                float: 'right',
-                                                width: '33%',
-                                                justifyContent: 'right',
-                                                alignText: 'right',
-                                            }}
-                                        >
-                                            <Heading
-                                                style={{
-                                                    paddingTop: '20px',
-                                                    marginTop: '0px',
-                                                    textAlign: 'center',
-                                                    clear: 'both',
-                                                    justifyContent: 'right',
-                                                    alignText: 'right',
-                                                }}
-                                                level={isMobile ? 3 : 1}
-                                            >
-                                                Splunk Appinspect
-                                            </Heading>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <></>
-                            )}
+                                    </>
+                                ) : (
+                                    <></>
+                                )}
+                                <div
+                                    style={
+                                        fullName
+                                            ? {
+                                                  float: 'right',
+                                                  width: '33%',
+                                                  justifyContent: 'right',
+                                                  alignText: 'right',
+                                              }
+                                            : {
+                                                  float: 'center',
+                                                  width: '100%',
+                                                  justifyContent: 'center',
+                                                  alignText: 'center',
+                                              }
+                                    }
+                                >
+                                    <Heading
+                                        style={{
+                                            paddingTop: '20px',
+                                            marginTop: '0px',
+                                            textAlign: 'center',
+                                            clear: 'both',
+                                            justifyContent: 'right',
+                                            alignText: 'right',
+                                        }}
+                                        level={isMobile ? 3 : 1}
+                                    >
+                                        Splunk Appinspect
+                                    </Heading>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     <tr>
