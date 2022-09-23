@@ -20,8 +20,6 @@ import AppinspectReportTab from './components/AppinspectReportTab';
 import Menu from '@splunk/react-ui/Menu';
 import { useRouter } from 'next/router';
 import { isMobile } from 'react-device-detect';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import NoSSR from 'react-no-ssr';
 
 function Heart(props) {
@@ -96,41 +94,20 @@ async function checkstatus(
     elapsed,
     setElapsed,
     setFinalReport,
-    setIsValidating
+    setIsValidating,
+    router,
+    setIsLoggingIn
 ) {
     var status = '';
     var elapsed = 0;
     var sleep_seconds = 1;
-    while (true) {
-        elapsed = elapsed + sleep_seconds;
-        setElapsed(elapsed);
+    if (token !== undefined) {
+        while (true) {
+            elapsed = elapsed + sleep_seconds;
+            setElapsed(elapsed);
 
-        //Now that we have a valid request ID, let's sleep and loop until our result is complete.
-        status = await fetch('/api/getreportstatus', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-
-            body: JSON.stringify({
-                token: token,
-                request_id: request_id,
-            }),
-        })
-            .then((res) => {
-                if (res.ok) {
-                    return res.json();
-                }
-                throw res;
-            })
-            .then((json) => {
-                return json;
-            });
-
-        if (status.status == 'PROCESSING') {
-            await timer(2000);
-        }
-        if (status.status == 'SUCCESS') {
-            console.log('Successfully processed App');
-            fetch('/api/getreport', {
+            //Now that we have a valid request ID, let's sleep and loop until our result is complete.
+            status = await fetch('/api/getreportstatus', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
 
@@ -146,11 +123,46 @@ async function checkstatus(
                     throw res;
                 })
                 .then((json) => {
-                    setFinalReport(json);
-                    setIsValidating(false);
+                    return json;
+                })
+                .catch((e) => {
+                    setInvalidUserError('Invalid User');
+                    console.log(e);
+                    return { status: { status: 'invalid_user' } };
                 });
-            break;
+
+            if (status.status == 'PROCESSING') {
+                await timer(2000);
+            }
+            if (status.status == 'SUCCESS') {
+                console.log('Successfully processed App');
+                fetch('/api/getreport', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify({
+                        token: token,
+                        request_id: request_id,
+                    }),
+                })
+                    .then((res) => {
+                        if (res.ok) {
+                            return res.json();
+                        }
+                        throw res;
+                    })
+                    .then((json) => {
+                        setFinalReport(json);
+                        setIsValidating(false);
+                    });
+                break;
+            }
         }
+    } else {
+        delete router.query.request_id;
+        router.push(router);
+        setIsValidating(false);
+        setIsLoggingIn(false);
     }
     return status;
 }
@@ -170,6 +182,7 @@ export default function Home() {
     const [fullName, setFullName] = useState();
     const [loginError, setLoginError] = useState(null);
     const [token, setToken] = useState();
+    const [invalidUserError, setInvalidUserError] = useState(null);
 
     // Popover
     const [popoverOpen, setPopoverOpen] = useState(false);
@@ -203,7 +216,9 @@ export default function Home() {
                 elapsedTime,
                 setElapsedTime,
                 setFinalReport,
-                setIsValidating
+                setIsValidating,
+                router,
+                setIsLoggingIn
             );
         }
     }, [request_id]);
@@ -366,7 +381,9 @@ export default function Home() {
                         elapsedTime,
                         setElapsedTime,
                         setFinalReport,
-                        setIsValidating
+                        setIsValidating,
+                        router,
+                        isLoggingIn
                     );
                 }
             })
@@ -822,7 +839,7 @@ export default function Home() {
                                 <></>
                             )}
 
-                            {finalReport.reports !== undefined ? (
+                            {finalReport.reports !== undefined && !invalidUserError ? (
                                 <div style={{ textAlign: 'center', margin: 'auto' }}>
                                     <Heading
                                         style={{ textAlign: 'center', margin: 'auto' }}
