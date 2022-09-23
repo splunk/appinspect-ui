@@ -394,10 +394,13 @@ export default function Home() {
             if (finalReport.summary.error > 0) {
                 <>
                     <SplunkThemeProvider family="enterprise" colorScheme={theme} density="compact">
-                        <P style={{ width: '50%', alignText: 'center', margin: 'auto' }}>
+                        <Heading
+                            level={3}
+                            style={{ width: '50%', alignText: 'center', margin: 'auto' }}
+                        >
                             Oops! Something went wrong. It looks like we&#39;re having an issue with
                             the appinspect service.
-                        </P>
+                        </Heading>
                     </SplunkThemeProvider>
                 </>;
             } else if (finalReport.summary.failure > 0) {
@@ -428,11 +431,14 @@ export default function Home() {
                             colorScheme={theme}
                             density="compact"
                         >
-                            <P style={{ width: '50%', alignText: 'center', margin: 'auto' }}>
+                            <Heading
+                                level={3}
+                                style={{ width: '50%', alignText: 'center', margin: 'auto' }}
+                            >
                                 Woah, great job on the app! All that&#39;s left are some items that
                                 need to be manually checked. Check out the Manual Check&#39;s tab
                                 below to see what will get reviewed.
-                            </P>
+                            </Heading>
                         </SplunkThemeProvider>
                     </>
                 );
@@ -444,9 +450,12 @@ export default function Home() {
                             colorScheme={theme}
                             density="compact"
                         >
-                            <P style={{ width: '50%', alignText: 'center', margin: 'auto' }}>
+                            <Heading
+                                level={3}
+                                style={{ width: '50%', alignText: 'center', margin: 'auto' }}
+                            >
                                 Congratulations! This app looks great. Enjoy using your app.
-                            </P>
+                            </Heading>
                         </SplunkThemeProvider>
                     </>
                 );
