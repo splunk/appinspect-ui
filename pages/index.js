@@ -1094,10 +1094,10 @@ export default function Home() {
                                 <br />
                                 <Link
                                     to={
-                                        'https://appinspect-ui.vercel.com/?request_id=' + request_id
+                                        'https://appinspect-ui.vercel.app/?request_id=' + request_id
                                     }
                                 >
-                                    {'https://appinspect-ui.vercel.com/?request_id=' + request_id}
+                                    {'https://appinspect-ui.vercel.app/?request_id=' + request_id}
                                 </Link>
                             </P>
                             <br />
@@ -1135,6 +1135,10 @@ export default function Home() {
                         <Button appearance="primary" onClick={handleRequestClose} label="OK" />
                     </Modal.Footer>
                 </Modal>{' '}
+                <br />
+                <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
+                    Made with <Link to="https://splunkui.splunk.com">Splunk UI</Link>
+                </P>
                 <br />
                 <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
                     © Copyright 2022 Splunk, Inc.
