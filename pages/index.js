@@ -19,7 +19,9 @@ import AppInspectTags from './components/AppInspectTags';
 import AppinspectReportTab from './components/AppinspectReportTab';
 import Menu from '@splunk/react-ui/Menu';
 import { useRouter } from 'next/router';
-import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
+import { isMobile } from 'react-device-detect';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import NoSSR from 'react-no-ssr';
 
 function Heart(props) {
@@ -394,6 +396,36 @@ export default function Home() {
     const emailAppinspect = (e) => {
         e.preventDefault();
         window.location.href = 'mailto:appinspect@splunk.comn';
+    };
+    //What to do if a user wants to upload a new app.
+    const downloadReport = (e) => {
+        e.preventDefault();
+
+        fetch('/api/getreporthtml', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+
+            body: JSON.stringify({
+                token: token,
+                request_id: request_id,
+            }),
+        })
+            .then((res) => {
+                if (res.ok) {
+                    return res.text();
+                }
+                throw res;
+            })
+            .then((html) => {
+                const element = document.createElement('a');
+                const file = new Blob([html], {
+                    type: 'text/html',
+                });
+                element.href = URL.createObjectURL(file);
+                element.download = 'report.html';
+                document.body.appendChild(element); // Required for this to work in FireFox
+                element.click();
+            });
     };
 
     useEffect(() => {
@@ -831,12 +863,16 @@ export default function Home() {
                                     >
                                         Ready to upload another app?
                                     </Button>
+                                    <Button appearance="primary" onClick={(e) => downloadReport(e)}>
+                                        Download Report
+                                    </Button>
                                     <Button
                                         appearance="primary"
                                         onClick={(e) => emailAppinspect(e)}
                                     >
                                         Have other questions?
                                     </Button>
+
                                     <br />
                                     <div id="report" style={{ marginTop: 75 }}>
                                         <Heading
