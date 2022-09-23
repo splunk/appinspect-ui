@@ -1,7 +1,7 @@
 import { deleteCookie, getCookie, setCookie } from 'cookies-next';
 import SplunkThemeProvider from '@splunk/themes/SplunkThemeProvider';
 import dynamic from 'next/dynamic';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import User from '@splunk/react-icons/User';
 import Monogram, { getInitials } from '@splunk/react-ui/Monogram';
 import Error from '@splunk/react-icons/Error';
@@ -36,6 +36,10 @@ Modal.Footer = dynamic(() => import('@splunk/react-ui/Modal').then((mod) => mod.
 });
 
 const Heading = dynamic(() => import('@splunk/react-ui/Heading'), {
+    ssr: false,
+});
+
+const Popover = dynamic(() => import('@splunk/react-ui/Popover'), {
     ssr: false,
 });
 
@@ -153,6 +157,11 @@ export default function Home() {
     const [fullName, setFullName] = useState();
     const [loginError, setLoginError] = useState(null);
     const [token, setToken] = useState();
+
+    // Popover
+    const [popoverOpen, setPopoverOpen] = useState(false);
+    const [monogramAnchor, setMonogramAnchor] = useState();
+    const monogramAnchorRef = useCallback((el) => setMonogramAnchor(el), []);
 
     //Get Final Report
     const [finalReport, setFinalReport] = useState({});
@@ -464,13 +473,35 @@ export default function Home() {
         <SplunkThemeProvider family="prisma" colorScheme={theme} density="comfortable">
             {fullName ? (
                 <>
-                    <Dropdown toggle={monogram}>
-                        <Menu style={{ width: 200 }}>
-                            <Menu.Item>{fullName}</Menu.Item>
+                    <span
+                        style={{
+                            fontSize: '50px',
+                            marginLeft: '20px',
+                            verticalAlign: 'middle',
+                            display: 'inline-block',
+                        }}
+                    >
+                        <Monogram
+                            style={{
+                                margin: '10px',
+                            }}
+                            backgroundColor="auto"
+                            initials={getInitials(fullName)}
+                            onClick={() => setPopoverOpen(true)}
+                            elementRef={monogramAnchorRef}
+                        />{' '}
+                        <Popover
+                            open={popoverOpen}
+                            anchor={monogramAnchor}
+                            onRequestClose={() => setPopoverOpen(false)}
+                        >
+                            <Menu style={{ width: 200 }}>
+                                <Menu.Item disabled>{fullName}</Menu.Item>
 
-                            <Menu.Item onClick={() => logout()}>Sign-out</Menu.Item>
-                        </Menu>
-                    </Dropdown>
+                                <Menu.Item onClick={() => logout()}>Sign-out</Menu.Item>
+                            </Menu>
+                        </Popover>
+                    </span>
                 </>
             ) : (
                 <></>

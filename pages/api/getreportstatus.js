@@ -14,7 +14,6 @@ export default function handler(req, res) {
         })
         .then((data) => {
             res.status(200).json(data);
-            console.log(data);
         })
         .catch((response) => {
             res.status(response.status).json(response.data);
