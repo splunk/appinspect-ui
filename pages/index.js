@@ -79,7 +79,7 @@ async function checkstatus(
         setElapsed(elapsed);
 
         //Now that we have a valid request ID, let's sleep and loop until our result is complete.
-        status = await fetch('http://localhost:3000/api/getreportstatus', {
+        status = await fetch('/api/getreportstatus', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
 
@@ -249,7 +249,7 @@ export default function Home() {
     /* Validation Functions */
     const validateApps = (e) => {
         for (var item in filesArray) {
-            fetch('http://localhost:3000/api/validateapp', {
+            fetch('/api/validateapp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
 
