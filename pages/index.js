@@ -126,10 +126,19 @@ async function checkstatus(
                     return json;
                 })
                 .catch((e) => {
-                    setInvalidUserError('Invalid User');
                     console.log(e);
                     return { status: { status: 'invalid_user' } };
                 });
+
+            console.log(status.status);
+
+            if (status.status.status == 'invalid_user') {
+                delete router.query.request_id;
+                router.push(router);
+                setIsValidating(false);
+                setIsLoggingIn(false);
+                break;
+            }
 
             if (status.status == 'PROCESSING') {
                 await timer(2000);

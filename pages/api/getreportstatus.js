@@ -10,7 +10,7 @@ export default function handler(req, res) {
                 return res.json();
             }
             var data = await res.json();
-            throw { data: data, status: response.status };
+            throw { data: data, status: res.status };
         })
         .then((data) => {
             res.status(200).json(data);
