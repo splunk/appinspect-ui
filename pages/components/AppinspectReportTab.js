@@ -14,17 +14,13 @@ export default function AppinspectReportTab(props) {
         >
             {props.count ? (
                 <Accordion>
-                    {props.finalreport_groups.map((key, group) => {
+                    {props.finalreport_groups.map((group) => {
                         return group.checks.map((key, check) => {
-                            if (check.result == props.check_result) {
+                            if (key.result == props.check_result) {
                                 return (
-                                    <Accordion.Panel
-                                        key={key}
-                                        panelId={check.name}
-                                        title={check.name}
-                                    >
+                                    <Accordion.Panel key={key} panelId={key.name} title={key.name}>
                                         <List>
-                                            {check.messages.map((key, message) => {
+                                            {key.messages.map((message, key) => {
                                                 if (
                                                     message.message_line &&
                                                     message.message_filename
