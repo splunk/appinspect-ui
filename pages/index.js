@@ -714,9 +714,6 @@ export default function Home() {
                                                 ) : (
                                                     <></>
                                                 )}
-                                                {/* {filesArray.map((key) => {
-                      return <p key={key}>{key.name}</p>;
-                    })} */}
                                             </File>
                                         </div>
                                     </div>{' '}
