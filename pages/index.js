@@ -186,6 +186,8 @@ export default function Home() {
     const [file, setFile] = useState();
     const [errorSummary, setErrorSummary] = useState(<></>);
 
+    const [defaultTabLayout, setDefaultTabLayout] = useState('error');
+
     // Dark mode detection
     const [theme, setMode] = useState('light');
 
@@ -244,6 +246,11 @@ export default function Home() {
     //Update Password as users are typing
     const updateUsername = (e) => {
         setUsername(e.target.value);
+    };
+
+    //Update Password as users are typing
+    const changePanelID = (e, { activePanelId: panelId }) => {
+        setDefaultTabLayout(panelId);
     };
 
     //When user clicks the login button
@@ -403,6 +410,7 @@ export default function Home() {
                         </Heading>
                     </SplunkThemeProvider>
                 </>;
+                setDefaultTabLayout('error');
             } else if (finalReport.summary.failure > 0) {
                 setErrorSummary(
                     <>
@@ -423,6 +431,8 @@ export default function Home() {
                         </SplunkThemeProvider>
                     </>
                 );
+
+                setDefaultTabLayout('failure');
             } else if (finalReport.summary.failure == 0 && finalReport.summary.manual_check > 0) {
                 setErrorSummary(
                     <>
@@ -442,6 +452,7 @@ export default function Home() {
                         </SplunkThemeProvider>
                     </>
                 );
+                setDefaultTabLayout('manual_check');
             } else {
                 setErrorSummary(
                     <>
@@ -459,6 +470,7 @@ export default function Home() {
                         </SplunkThemeProvider>
                     </>
                 );
+                setDefaultTabLayout('success');
             }
         }
     }, [finalReport]);
@@ -846,7 +858,9 @@ export default function Home() {
                                                 justify: 'center',
                                                 margin: 'auto',
                                             }}
-                                            defaultActivePanelId="error"
+                                            defaultActivePanelId={'error'}
+                                            activePanelId={defaultTabLayout}
+                                            onChange={changePanelID}
                                         >
                                             <AppinspectReportTab
                                                 icon={<Error style={{ color: '#A80000' }} />}
