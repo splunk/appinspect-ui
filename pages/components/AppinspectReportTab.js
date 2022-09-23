@@ -1,7 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
+import dynamic from 'next/dynamic';
 import Accordion from '@splunk/react-ui/Accordion';
 import TabLayout from '@splunk/react-ui/TabLayout';
 import List from '@splunk/react-ui/List';
+const P = dynamic(() => import('@splunk/react-ui/Paragraph'), {
+    ssr: false,
+});
+
+const Heading = dynamic(() => import('@splunk/react-ui/Heading'), {
+    ssr: false,
+});
 
 export default function AppinspectReportTab(props) {
     return (
@@ -15,18 +23,24 @@ export default function AppinspectReportTab(props) {
             {props.count ? (
                 <Accordion>
                     {props.finalreport_groups.map((group) => {
-                        return group.checks.map((key, check) => {
-                            if (key.result == props.check_result) {
+                        return group.checks.map((group_key, check) => {
+                            if (group_key.result == props.check_result) {
                                 return (
-                                    <Accordion.Panel key={key} panelId={key.name} title={key.name}>
+                                    <Accordion.Panel
+                                        key={check}
+                                        panelId={group_key.name}
+                                        title={group_key.name}
+                                    >
                                         <List>
-                                            {key.messages.map((message, key) => {
+                                            <Heading level={4}>{group_key.description}</Heading>
+
+                                            {group_key.messages.map((message, key) => {
                                                 if (
                                                     message.message_line &&
                                                     message.message_filename
                                                 ) {
                                                     return (
-                                                        <List.Item key={key}>
+                                                        <List.Item key={message}>
                                                             <pre
                                                                 style={{
                                                                     'white-space': 'pre-wrap',

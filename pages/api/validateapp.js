@@ -18,6 +18,7 @@ function dataURItoBlob(dataURI) {
         return new Blob([ia], { type: mimeString });
     } catch (e) {}
 }
+
 export default function handler(req, res) {
     {
         const form = new FormData();
@@ -26,6 +27,8 @@ export default function handler(req, res) {
 
         // console.log(form);
         const encoder = new FormDataEncoder(form);
+
+        console.log(encoder);
 
         fetch('https://appinspect.splunk.com/v1/app/validate', {
             method: 'POST',

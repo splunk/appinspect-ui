@@ -16,10 +16,6 @@ import AppinspectReportTab from './components/AppinspectReportTab';
 import Dropdown from '@splunk/react-ui/Dropdown';
 import Menu from '@splunk/react-ui/Menu';
 
-// const List = dynamic(() => import("@splunk/react-ui/List"), {
-//   ssr: false,
-// });
-
 const Heading = dynamic(() => import('@splunk/react-ui/Heading'), {
     ssr: false,
 });
@@ -60,7 +56,6 @@ const Link = dynamic(() => import('@splunk/react-ui/Link'), {
     ssr: false,
 });
 
-// Returns a Promise that resolves after "ms" Milliseconds
 const timer = (ms) => new Promise((response) => setTimeout(response, ms));
 
 async function checkstatus(
@@ -120,6 +115,7 @@ async function checkstatus(
                 })
                 .then((json) => {
                     setFinalReport(json);
+                    console.log(json);
                     setIsValidating(false);
                 });
             break;
@@ -686,7 +682,7 @@ export default function Home() {
                                                 </Heading>
                                                 <p>
                                                     {finalReport.run_parameters.included_tags.map(
-                                                        (key, tag) => (
+                                                        (tag, key) => (
                                                             <Chip key={key}>{tag}</Chip>
                                                         )
                                                     )}
