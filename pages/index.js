@@ -1119,7 +1119,7 @@ export default function Home() {
                 <br />
                 <div style={{ textAlign: 'center' }}>
                     <Link ref={modalToggle} onClick={() => handleRequestOpen()}>
-                        <ReportSearch size={1} /> More Developer Resources
+                        <ReportSearch size={1} /> More Splunk Developer Resources
                     </Link>
                 </div>
                 <Modal
