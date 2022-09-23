@@ -144,6 +144,7 @@ async function checkstatus(
                 router.push(router);
                 setIsValidating(false);
                 setIsLoggingIn(false);
+                setFinalReport({});
                 break;
             }
             if (status.status == 'PROCESSING') {
