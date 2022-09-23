@@ -188,10 +188,13 @@ export default function Home() {
     const router = useRouter();
     const { request_id } = router.query;
 
-    //Toggle Modal for Additional Resources
+    //Toggle Modal for Request ID
     const modalToggle = useRef(null);
     const [moreResourcesModalOpen, setMoreModalResourcesOpen] = useState(false);
     const [lookupRequestModalOpen, setLookupRequestModalOpen] = useState(false);
+
+    //Toggle Modal for Additional Resources
+    const [open, setOpen] = useState(false);
 
     //Authentication
     const [password, setPassword] = useState('');
@@ -420,6 +423,15 @@ export default function Home() {
         setFullName(null);
         deleteCookie('token');
         refreshPage();
+    };
+
+    //Open and Close the Developer Resources Modal
+    const handleRequestOpen = () => {
+        setOpen(true);
+    };
+
+    const handleRequestClose = () => {
+        setOpen(false);
     };
 
     const handleLookupError = (error) => {
@@ -1471,11 +1483,6 @@ export default function Home() {
                                 </>
                             )}
                             <br />
-                            <div style={{ textAlign: 'center' }}>
-                                <Link ref={modalToggle} onClick={() => handleRequestOpen()}>
-                                    <ReportSearch size={1} /> More Splunk Developer Resources
-                                </Link>
-                            </div>
                             <Modal
                                 onRequestClose={() => setLookupRequestModalOpen(false)}
                                 open={lookupRequestModalOpen}
@@ -1537,14 +1544,19 @@ export default function Home() {
                                     />
                                 </Modal.Footer>
                             </Modal>
+                            <div style={{ textAlign: 'center' }}>
+                                <Link ref={modalToggle} onClick={() => handleRequestOpen()}>
+                                    <ReportSearch size={1} /> More Splunk Developer Resources
+                                </Link>
+                            </div>
                             <Modal
-                                onRequestClose={() => setMoreModalResourcesOpen(false)}
-                                open={moreResourcesModalOpen}
+                                onRequestClose={() => handleRequestClose()}
+                                open={open}
                                 style={{ width: '600px' }}
                             >
                                 <Modal.Header
                                     title="More Developer Resources"
-                                    onRequestClose={() => setMoreModalResourcesOpen(false)}
+                                    onRequestClose={() => handleRequestClose(false)}
                                 />
                                 <Modal.Body>
                                     <List>
@@ -1563,7 +1575,7 @@ export default function Home() {
                                 <Modal.Footer>
                                     <Button
                                         appearance="primary"
-                                        onClick={() => setMoreModalResourcesOpen(false)}
+                                        onClick={() => handleRequestClose(false)}
                                         label="OK"
                                     />
                                 </Modal.Footer>
