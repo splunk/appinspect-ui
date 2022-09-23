@@ -1053,8 +1053,8 @@ export default function Home() {
                         </P>
                         <br />
                         <P style={{ textAlign: 'center', margin: 'auto' }}>
-                            Don't feel like waiting? Save this link to come back any time while we
-                            process your app.
+                            Don&#39;t feel like waiting? Save this link to come back any time while
+                            we process your app.
                             <br />
                             <Link to={'https://appinspect-ui.vercel.com/?request_id=' + request_id}>
                                 {'https://appinspect-ui.vercel.com/?request_id=' + request_id}
