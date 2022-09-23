@@ -13,5 +13,8 @@ export default function handler(req, res) {
         })
         .then((json) => {
             res.status(200).json(json);
+        })
+        .catch((response) => {
+            res.status(response.status).json(response.json());
         });
 }
