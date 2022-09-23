@@ -19,10 +19,30 @@ import html2canvas from "html2canvas";
 import AppInspectTags from "./components/AppInspectTags";
 import AppinspectReportTab from "./components/AppinspectReportTab";
 import Dropdown from "@splunk/react-ui/Dropdown";
-import Modal from "@splunk/react-ui/Modal";
 import Menu from "@splunk/react-ui/Menu";
 import { useRouter } from "next/router";
-import axios from "axios";
+
+const Modal = dynamic(() => import("@splunk/react-ui/Modal"), {
+  ssr: false,
+});
+Modal.Header = dynamic(
+  () => import("@splunk/react-ui/Modal").then((mod) => mod.Header),
+  {
+    ssr: false,
+  }
+);
+Modal.Body = dynamic(
+  () => import("@splunk/react-ui/Modal").then((mod) => mod.Body),
+  {
+    ssr: false,
+  }
+);
+Modal.Footer = dynamic(
+  () => import("@splunk/react-ui/Modal").then((mod) => mod.Footer),
+  {
+    ssr: false,
+  }
+);
 
 const Heading = dynamic(() => import("@splunk/react-ui/Heading"), {
   ssr: false,
@@ -932,7 +952,7 @@ export default function Home() {
       >
         <ReportSearch size={1} /> More Developer Resources
       </div>
-      {/*} <Modal
+      <Modal
         onRequestClose={() => handleRequestClose()}
         open={open}
         style={{ width: "600px" }}
@@ -960,7 +980,7 @@ export default function Home() {
             label="OK"
           />
         </Modal.Footer>
-      </Modal>{" "}*/}
+      </Modal>{" "}
       <br />
       <P style={{ margin: "auto", textAlign: "center" }} level={4}>
         © Copyright 2022 Splunk, Inc.
