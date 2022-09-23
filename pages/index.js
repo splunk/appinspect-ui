@@ -192,7 +192,11 @@ export default function Home() {
                 setIsLoggingIn(false);
 
                 if (data.data === undefined) {
-                    setLoginError(data.msg);
+                    if (data.msg == 'Failed to authenticate user') {
+                        setLoginError('Invalid Username or Password');
+                    } else {
+                        setLoginError(data.msg);
+                    }
                 } else {
                     //setCookie('token', data.data.token);
                     setToken(data.data.token);
