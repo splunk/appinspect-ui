@@ -952,12 +952,10 @@ export default function Home() {
         </>
       )}
       <br />
-      <div
-        style={{ textAlign: "center" }}
-        ref={modalToggle}
-        onClick={() => handleRequestOpen()}
-      >
-        <ReportSearch size={1} /> More Developer Resources
+      <div style={{ textAlign: "center" }}>
+        <Link ref={modalToggle} onClick={() => handleRequestOpen()}>
+          <ReportSearch size={1} /> More Developer Resources
+        </Link>
       </div>
       <Modal
         onRequestClose={() => handleRequestClose()}
