@@ -846,12 +846,11 @@ export default function Home() {
                                     </P>
                                     <Link
                                         to={
-                                            'https://appinspect-ui.vercel.app/?request_id=' +
+                                            'https://appinspect.vercel.app/?request_id=' +
                                             request_id
                                         }
                                     >
-                                        {'https://appinspect-ui.vercel.app/?request_id=' +
-                                            request_id}
+                                        {'https://appinspect.vercel.app/?request_id=' + request_id}
                                     </Link>
                                     <br />
                                     <br />
@@ -1164,11 +1163,9 @@ export default function Home() {
                                 while we process your app.
                                 <br />
                                 <Link
-                                    to={
-                                        'https://appinspect-ui.vercel.app/?request_id=' + request_id
-                                    }
+                                    to={'https://appinspect.vercel.app/?request_id=' + request_id}
                                 >
-                                    {'https://appinspect-ui.vercel.app/?request_id=' + request_id}
+                                    {'https://appinspect.vercel.app/?request_id=' + request_id}
                                 </Link>
                             </P>
                             <br />
