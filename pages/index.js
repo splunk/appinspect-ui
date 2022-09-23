@@ -1,7 +1,7 @@
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import SplunkThemeProvider from "@splunk/themes/SplunkThemeProvider";
 import dynamic from "next/dynamic";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import User from "@splunk/react-icons/User";
 import Monogram, { getInitials } from "@splunk/react-ui/Monogram";
 import Error from "@splunk/react-icons/Error";
@@ -18,7 +18,6 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import AppInspectTags from "./components/AppInspectTags";
 import AppinspectReportTab from "./components/AppinspectReportTab";
-import Dropdown from "@splunk/react-ui/Dropdown";
 import Menu from "@splunk/react-ui/Menu";
 import { useRouter } from "next/router";
 
@@ -43,6 +42,10 @@ Modal.Footer = dynamic(
     ssr: false,
   }
 );
+
+const Popover = dynamic(() => import("@splunk/react-ui/Popover"), {
+  ssr: false,
+});
 
 const Heading = dynamic(() => import("@splunk/react-ui/Heading"), {
   ssr: false,
@@ -160,6 +163,11 @@ export default function Home() {
   const [fullName, setFullName] = useState();
   const [loginError, setLoginError] = useState(null);
   const [uploadError, setUploadError] = useState(null);
+
+  // Popover
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [monogramAnchor, setMonogramAnchor] = useState();
+  const monogramAnchorRef = useCallback((el) => setMonogramAnchor(el), []);
 
   const [token, setToken] = useState();
 
@@ -380,29 +388,6 @@ export default function Home() {
     });
   };
 
-  if (fullName) {
-    var monogram = (
-      <span
-        style={{
-          fontSize: "50px",
-          marginLeft: "20px",
-          verticalAlign: "middle",
-          display: "inline-block",
-        }}
-      >
-        <Monogram
-          style={{
-            margin: "10px",
-          }}
-          backgroundColor="auto"
-          initials={getInitials(fullName)}
-        />{" "}
-      </span>
-    );
-  } else {
-    var monogram = null;
-  }
-
   return (
     <SplunkThemeProvider
       family="prisma"
@@ -411,13 +396,35 @@ export default function Home() {
     >
       {fullName ? (
         <>
-          <Dropdown toggle={monogram}>
-            <Menu style={{ width: 200 }}>
-              <Menu.Item>{fullName}</Menu.Item>
+          <span
+            style={{
+              fontSize: "50px",
+              marginLeft: "20px",
+              verticalAlign: "middle",
+              display: "inline-block",
+            }}
+          >
+            <Monogram
+              style={{
+                margin: "10px",
+              }}
+              backgroundColor="auto"
+              initials={getInitials(fullName)}
+              onClick={() => setPopoverOpen(true)}
+              elementRef={monogramAnchorRef}
+            />{" "}
+            <Popover
+              open={popoverOpen}
+              anchor={monogramAnchor}
+              onRequestClose={() => setPopoverOpen(false)}
+            >
+              <Menu style={{ width: 200 }}>
+                <Menu.Item disabled>{fullName}</Menu.Item>
 
-              <Menu.Item onClick={() => logout()}>Sign-out</Menu.Item>
-            </Menu>
-          </Dropdown>
+                <Menu.Item onClick={() => logout()}>Sign-out</Menu.Item>
+              </Menu>
+            </Popover>
+          </span>
         </>
       ) : (
         <></>
