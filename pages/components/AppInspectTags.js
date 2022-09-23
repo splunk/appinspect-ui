@@ -98,7 +98,7 @@ export default function AppInspectTags(props) {
                             'splunk_appinspect',
                             'web_conf',
                         ].map((key, value) => (
-                            <Multiselect.Option key={key} label={value} value={value} />
+                            <Multiselect.Option key={key} label={key} value={value} />
                         ))}
                     </Multiselect>
                 </div>

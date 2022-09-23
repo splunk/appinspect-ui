@@ -5,9 +5,7 @@ import { Blob } from 'buffer';
 
 function dataURItoBlob(dataURI) {
     var byteString = atob(dataURI.split(',')[1]);
-
     var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-
     var ab = new ArrayBuffer(byteString.length);
     var ia = new Uint8Array(ab);
     for (var i = 0; i < byteString.length; i++) {
@@ -24,11 +22,7 @@ export default function handler(req, res) {
         const form = new FormData();
         form.append('app_package', dataURItoBlob(req.body.value), req.body.filename);
         form.append('included_tags', req.body.included_tags);
-
-        // console.log(form);
         const encoder = new FormDataEncoder(form);
-
-        console.log(encoder);
 
         fetch('https://appinspect.splunk.com/v1/app/validate', {
             method: 'POST',
@@ -39,9 +33,17 @@ export default function handler(req, res) {
                 'content-type': encoder.contentType,
             },
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw response;
+            })
             .then((data) => {
                 res.status(200).json(data);
+            })
+            .catch((response) => {
+                res.status(response.status).json(response.json());
             });
     }
 }

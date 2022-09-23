@@ -7,8 +7,16 @@ export default function handler(req, res) {
                 Buffer.from(req.body.username + ':' + req.body.password).toString('base64'),
         },
     })
-        .then((response) => response.json())
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw response;
+        })
         .then((data) => {
             res.status(200).json(data);
+        })
+        .catch((response) => {
+            res.status(response.status).json(response.json());
         });
 }

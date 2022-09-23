@@ -187,33 +187,21 @@ export default function Home() {
                 password: password,
             }),
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw response;
+            })
             .then((data) => {
                 setIsLoggingIn(false);
 
-                if (data.data === undefined) {
-                    if (data.msg == 'Failed to authenticate user') {
-                        setLoginError('Invalid Username or Password');
-                    } else {
-                        setLoginError(data.msg);
-                    }
-                } else {
-                    //setCookie('token', data.data.token);
-                    setToken(data.data.token);
-                    setFullName(data.data.user.name);
-
-                    // if (username == "iamthemcmaster") {
-                    //   setIsValidating(true);
-                    //   checkstatus(
-                    //     data.data.token,
-                    //     "2abfb848-e888-43fe-a239-f7e0df60cdb2",
-                    //     elapsedTime,
-                    //     setElapsedTime,
-                    //     setFinalReport,
-                    //     setIsValidating
-                    //   );
-                    // }
-                }
+                setToken(data.data.token);
+                setFullName(data.data.user.name);
+            })
+            .catch(() => {
+                setIsLoggingIn(false);
+                setLoginError('Invalid Username or Password');
             });
     };
 
