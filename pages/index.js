@@ -159,8 +159,6 @@ async function checkstatus(
             }
         }
     } else {
-        delete router.query.request_id;
-        router.push(router);
         setIsValidating(false);
         setIsLoggingIn(false);
     }
@@ -300,6 +298,21 @@ export default function Home() {
                     setToken(data.data.token);
                     setFullName(data.data.user.name);
                     setCookie('token', data.data.token);
+
+                    if (router.query.request_id) {
+                        setIsValidating(true);
+
+                        checkstatus(
+                            data.data.token,
+                            router.query.request_id,
+                            elapsedTime,
+                            setElapsedTime,
+                            setFinalReport,
+                            setIsValidating,
+                            router,
+                            setIsLoggingIn
+                        );
+                    }
                 }
             });
     };
@@ -337,7 +350,14 @@ export default function Home() {
     const logout = () => {
         setToken(null);
         setFullName(null);
+        refreshPage(null);
         deleteCookie('token');
+        setElapsedTime(0);
+        setIsLoggingIn(false);
+        setIsValidating(false);
+        setSelectedTags(['cloud']);
+        setFile(null);
+        setFinalReport({});
     };
 
     //Open and Close the Developer Resources Modal
@@ -383,7 +403,7 @@ export default function Home() {
                         setFinalReport,
                         setIsValidating,
                         router,
-                        isLoggingIn
+                        setIsLoggingIn
                     );
                 }
             })
@@ -528,408 +548,868 @@ export default function Home() {
         <NoSSR>
             <SplunkThemeProvider family="prisma" colorScheme={theme} density="comfortable">
                 <table style={{ width: '100%' }}>
-                    <tr>
-                        <td>
-                            <div>
-                                {fullName ? (
+                    <thead>
+                        <tr>
+                            <td>
+                                <div>
+                                    {fullName ? (
+                                        <>
+                                            <div style={{ float: 'left', width: '33%' }}>
+                                                {' '}
+                                                <span
+                                                    style={{
+                                                        fontSize: '50px',
+                                                        marginLeft: '20px',
+                                                        verticalAlign: 'middle',
+                                                        padding: '0px',
+                                                    }}
+                                                >
+                                                    <Monogram
+                                                        style={{}}
+                                                        backgroundColor="auto"
+                                                        initials={getInitials(fullName)}
+                                                        onClick={() => setPopoverOpen(true)}
+                                                        elementRef={monogramAnchorRef}
+                                                    />{' '}
+                                                    <Popover
+                                                        open={popoverOpen}
+                                                        anchor={monogramAnchor}
+                                                        onRequestClose={() => setPopoverOpen(false)}
+                                                    >
+                                                        <Menu style={{ width: 200 }}>
+                                                            <Menu.Item disabled>
+                                                                {fullName}
+                                                            </Menu.Item>
+
+                                                            <Menu.Item onClick={() => logout()}>
+                                                                Sign-out
+                                                            </Menu.Item>
+                                                        </Menu>
+                                                    </Popover>
+                                                </span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <></>
+                                    )}
+                                    <div
+                                        style={
+                                            fullName
+                                                ? {
+                                                      float: 'right',
+                                                      width: '33%',
+                                                      justifyContent: 'right',
+                                                      alignText: 'right',
+                                                  }
+                                                : {
+                                                      float: 'center',
+                                                      width: '100%',
+                                                      justifyContent: 'center',
+                                                      alignText: 'center',
+                                                  }
+                                        }
+                                    >
+                                        <Heading
+                                            style={{
+                                                paddingTop: '20px',
+                                                marginTop: '0px',
+                                                textAlign: 'center',
+                                                clear: 'both',
+                                                justifyContent: 'right',
+                                                alignText: 'right',
+                                            }}
+                                            level={isMobile ? 3 : 1}
+                                        >
+                                            Splunk Appinspect
+                                        </Heading>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {!token ? (
                                     <>
-                                        <div style={{ float: 'left', width: '33%' }}>
-                                            {' '}
-                                            <span
+                                        {!isMobile ? (
+                                            <div
                                                 style={{
-                                                    fontSize: '50px',
-                                                    marginLeft: '20px',
-                                                    verticalAlign: 'middle',
-                                                    padding: '0px',
+                                                    textAlign: 'center',
+                                                    justify: 'center',
+                                                    margin: 'auto',
+                                                    width: '25%',
                                                 }}
                                             >
-                                                <Monogram
-                                                    style={{}}
-                                                    backgroundColor="auto"
-                                                    initials={getInitials(fullName)}
-                                                    onClick={() => setPopoverOpen(true)}
-                                                    elementRef={monogramAnchorRef}
-                                                />{' '}
-                                                <Popover
-                                                    open={popoverOpen}
-                                                    anchor={monogramAnchor}
-                                                    onRequestClose={() => setPopoverOpen(false)}
-                                                >
-                                                    <Menu style={{ width: 200 }}>
-                                                        <Menu.Item disabled>{fullName}</Menu.Item>
-
-                                                        <Menu.Item onClick={() => logout()}>
-                                                            Sign-out
-                                                        </Menu.Item>
-                                                    </Menu>
-                                                </Popover>
-                                            </span>
-                                        </div>
+                                                <img
+                                                    src="/wizard.svg"
+                                                    style={{
+                                                        textAlign: 'center',
+                                                        justify: 'center',
+                                                        margin: 'auto',
+                                                        width: '100%',
+                                                    }}
+                                                ></img>
+                                            </div>
+                                        ) : (
+                                            <div
+                                                style={{
+                                                    textAlign: 'center',
+                                                    justify: 'center',
+                                                    margin: 'auto',
+                                                    width: '75%',
+                                                }}
+                                            >
+                                                <img
+                                                    src="/wizard.svg"
+                                                    style={{
+                                                        textAlign: 'center',
+                                                        justify: 'center',
+                                                        margin: 'auto',
+                                                        width: '100%',
+                                                    }}
+                                                ></img>
+                                            </div>
+                                        )}
+                                        <P
+                                            style={{ padding: '10px', textAlign: 'center' }}
+                                            level={2}
+                                        >
+                                            Are you ready to start validating your Splunk App for{' '}
+                                            <Link target="_new" to="https://splunkbase.splunk.com">
+                                                Splunkbase
+                                            </Link>{' '}
+                                            or{' '}
+                                            <Link
+                                                target="_new"
+                                                to="https://www.splunk.com/en_us/products/splunk-cloud-platform.html"
+                                            >
+                                                Splunk Cloud Platform
+                                            </Link>
+                                            ? This is the place for you.
+                                        </P>
                                     </>
                                 ) : (
                                     <></>
                                 )}
-                                <div
-                                    style={
-                                        fullName
-                                            ? {
-                                                  float: 'right',
-                                                  width: '33%',
-                                                  justifyContent: 'right',
-                                                  alignText: 'right',
-                                              }
-                                            : {
-                                                  float: 'center',
-                                                  width: '100%',
-                                                  justifyContent: 'center',
-                                                  alignText: 'center',
-                                              }
-                                    }
-                                >
-                                    <Heading
-                                        style={{
-                                            paddingTop: '20px',
-                                            marginTop: '0px',
-                                            textAlign: 'center',
-                                            clear: 'both',
-                                            justifyContent: 'right',
-                                            alignText: 'right',
-                                        }}
-                                        level={isMobile ? 3 : 1}
-                                    >
-                                        Splunk Appinspect
-                                    </Heading>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            {!token ? (
-                                <>
-                                    {!isMobile ? (
-                                        <div
-                                            style={{
-                                                textAlign: 'center',
-                                                justify: 'center',
-                                                margin: 'auto',
-                                                width: '25%',
-                                            }}
-                                        >
-                                            <img
-                                                src="/wizard.svg"
+                                {!isValidating ? (
+                                    <>
+                                        {!token ? (
+                                            <div
                                                 style={{
-                                                    textAlign: 'center',
-                                                    justify: 'center',
-                                                    margin: 'auto',
                                                     width: '100%',
+                                                    display: 'block',
+                                                    padding: '10px',
                                                 }}
-                                            ></img>
-                                        </div>
-                                    ) : (
-                                        <div
-                                            style={{
-                                                textAlign: 'center',
-                                                justify: 'center',
-                                                margin: 'auto',
-                                                width: '75%',
-                                            }}
-                                        >
-                                            <img
-                                                src="/wizard.svg"
-                                                style={{
-                                                    textAlign: 'center',
-                                                    justify: 'center',
-                                                    margin: 'auto',
-                                                    width: '100%',
-                                                }}
-                                            ></img>
-                                        </div>
-                                    )}
-                                    <P style={{ padding: '10px', textAlign: 'center' }} level={2}>
-                                        Are you ready to start validating your Splunk App for{' '}
-                                        <Link target="_new" to="https://splunkbase.splunk.com">
-                                            Splunkbase
-                                        </Link>{' '}
-                                        or{' '}
-                                        <Link
-                                            target="_new"
-                                            to="https://www.splunk.com/en_us/products/splunk-cloud-platform.html"
-                                        >
-                                            Splunk Cloud Platform
-                                        </Link>
-                                        ? This is the place for you.
-                                    </P>
-                                </>
-                            ) : (
-                                <></>
-                            )}
-                            {!isValidating ? (
-                                <>
-                                    {!token ? (
-                                        <div
-                                            style={{
-                                                width: '100%',
-                                                display: 'block',
-                                                padding: '10px',
-                                            }}
-                                        >
-                                            <div style={{ margin: 'auto', textAlign: 'center' }}>
-                                                <Heading
-                                                    level={3}
+                                            >
+                                                <div
                                                     style={{ margin: 'auto', textAlign: 'center' }}
                                                 >
-                                                    Enter Your Username and Password for Splunk.com
-                                                </Heading>
-                                                <br />
-                                                {loginError ? (
-                                                    <>
-                                                        <SplunkThemeProvider
-                                                            family="enterprise"
-                                                            colorScheme={theme}
-                                                            density="compact"
-                                                        >
-                                                            <Message
-                                                                appearance="fill"
-                                                                style={{
-                                                                    margin: 'auto',
-                                                                    width: '50%',
-                                                                }}
-                                                                type="error"
-                                                            >
-                                                                {loginError}
-                                                            </Message>
-                                                        </SplunkThemeProvider>
-                                                        <br />
-                                                    </>
-                                                ) : (
-                                                    <></>
-                                                )}
-
-                                                <form onSubmit={(e) => login(e)}>
-                                                    <div>
-                                                        <Text
-                                                            value={username}
-                                                            onChange={(e) => updateUsername(e)}
-                                                            startAdornment={
-                                                                <div
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        padding: '0 8px',
-                                                                    }}
-                                                                >
-                                                                    <User size={1} />
-                                                                </div>
-                                                            }
-                                                            inline
-                                                            placeholder="Username"
-                                                        />
-                                                        {isMobile ? <br /> : <></>}
-                                                        <Text
-                                                            inline
-                                                            type="password"
-                                                            value={password}
-                                                            placeholder="Password"
-                                                            onChange={(e) => updatePassword(e)}
-                                                        />
-                                                    </div>
-
+                                                    <Heading
+                                                        level={3}
+                                                        style={{
+                                                            margin: 'auto',
+                                                            textAlign: 'center',
+                                                        }}
+                                                    >
+                                                        Enter Your Username and Password for
+                                                        Splunk.com
+                                                    </Heading>
                                                     <br />
-                                                    <br />
-                                                    <br />
-                                                    {isLoggingIn ? (
+                                                    {loginError ? (
                                                         <>
-                                                            <WaitSpinner size="large" />
+                                                            <SplunkThemeProvider
+                                                                family="enterprise"
+                                                                colorScheme={theme}
+                                                                density="compact"
+                                                            >
+                                                                <Message
+                                                                    appearance="fill"
+                                                                    style={{
+                                                                        margin: 'auto',
+                                                                        width: '50%',
+                                                                    }}
+                                                                    type="error"
+                                                                >
+                                                                    {loginError}
+                                                                </Message>
+                                                            </SplunkThemeProvider>
+                                                            <br />
                                                         </>
                                                     ) : (
-                                                        <>
-                                                            <Button
-                                                                inline={false}
-                                                                style={{
-                                                                    marginBottom: '10px',
-                                                                    width: '25%',
-                                                                    textAlign: 'center',
-                                                                    margin: 'auto',
-                                                                }}
-                                                                appearance="primary"
-                                                                label="Login"
-                                                                type="submit"
-                                                            />{' '}
-                                                        </>
+                                                        <></>
                                                     )}
-                                                </form>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <></>
-                                    )}
 
-                                    <>
-                                        {token && finalReport.reports == undefined ? (
-                                            <>
-                                                <div>
-                                                    <AppInspectTags
-                                                        style={{
-                                                            textAlign: 'center',
-                                                            paddingTop: '10px',
-                                                        }}
-                                                        selector={handleSelectTags}
-                                                        selectedTags={selectedTags}
-                                                    ></AppInspectTags>
-                                                </div>
-                                                {uploadError ? (
-                                                    <>
-                                                        <SplunkThemeProvider
-                                                            family="enterprise"
-                                                            colorScheme={theme}
-                                                            density="comfortable"
-                                                        >
-                                                            <Message
-                                                                appearance="fill"
-                                                                type="error"
-                                                                style={{
-                                                                    marginLeft: 'auto',
-                                                                    marginRight: 'auto',
-                                                                    padding: 'auto',
-                                                                    textAlign: 'center',
-                                                                    width: '30%',
-                                                                }}
-                                                            >
-                                                                {uploadError}
-                                                            </Message>
-                                                        </SplunkThemeProvider>
-                                                    </>
-                                                ) : (
-                                                    <></>
-                                                )}
-                                                <div
-                                                    style={{
-                                                        width: '50%',
-                                                        textAlign: 'center',
-                                                        justifyContent: 'center',
-                                                        margin: 'auto',
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{ width: '100%', display: 'block' }}
-                                                    >
-                                                        <File
-                                                            onRequestAdd={handleAddFiles}
-                                                            onRequestRemove={handleRemoveFile}
-                                                            error={
-                                                                uploadError !== null ? true : false
-                                                            }
-                                                            supportsMessage={
-                                                                <>
-                                                                    Supports the following Splunk
-                                                                    App file types: .gz, .tgz, .zip,
-                                                                    .spl, .tar
-                                                                </>
-                                                            }
-                                                            style={{
-                                                                width: '100%',
-                                                                textAlign: 'center',
-                                                                justifyContent: 'center',
-                                                                margin: 'auto',
-                                                            }}
-                                                            help={
-                                                                <>
-                                                                    Learn more about{' '}
-                                                                    <Link
-                                                                        target="_new"
-                                                                        to="https://dev.splunk.com/enterprise/reference/appinspect/appinspectapiepref#Splunk-AppInspect-API"
+                                                    <form onSubmit={(e) => login(e)}>
+                                                        <div>
+                                                            <Text
+                                                                value={username}
+                                                                onChange={(e) => updateUsername(e)}
+                                                                startAdornment={
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            padding: '0 8px',
+                                                                        }}
                                                                     >
-                                                                        Splunk App File Types
-                                                                    </Link>
-                                                                </>
-                                                            }
+                                                                        <User size={1} />
+                                                                    </div>
+                                                                }
+                                                                inline
+                                                                placeholder="Username"
+                                                            />
+                                                            {isMobile ? <br /> : <></>}
+                                                            <Text
+                                                                inline
+                                                                type="password"
+                                                                value={password}
+                                                                placeholder="Password"
+                                                                onChange={(e) => updatePassword(e)}
+                                                            />
+                                                        </div>
 
-                                                            // allowMultiple
-                                                        >
-                                                            {file ? (
-                                                                <File.Item
-                                                                    name={file.name}
-                                                                    error={
-                                                                        uploadError !== null
-                                                                            ? true
-                                                                            : false
-                                                                    }
+                                                        <br />
+                                                        <br />
+                                                        <br />
+                                                        {isLoggingIn ? (
+                                                            <>
+                                                                <WaitSpinner size="large" />
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Button
+                                                                    inline={false}
                                                                     style={{
+                                                                        marginBottom: '10px',
+                                                                        width: '25%',
                                                                         textAlign: 'center',
-                                                                        justifyContent: 'center',
                                                                         margin: 'auto',
                                                                     }}
-                                                                />
-                                                            ) : (
-                                                                <></>
-                                                            )}
-                                                        </File>
-                                                    </div>
-                                                </div>{' '}
-                                                <div style={{ textAlign: 'center' }}>
-                                                    <P style={{ textAlign: 'center' }}>
-                                                        Learn more about{' '}
-                                                        <Link
-                                                            target="_new"
-                                                            to="https://dev.splunk.com/enterprise/reference/appinspect/appinspectapiepref#Splunk-AppInspect-API"
-                                                        >
-                                                            Splunk App File Types
-                                                        </Link>
-                                                    </P>
+                                                                    appearance="primary"
+                                                                    label="Login"
+                                                                    type="submit"
+                                                                />{' '}
+                                                            </>
+                                                        )}
+                                                    </form>
                                                 </div>
-                                                <br />
-                                                <Button
-                                                    inline={false}
-                                                    style={
-                                                        isMobile
-                                                            ? {
-                                                                  marginBottom: '10px',
-                                                                  width: '75%',
-                                                                  textAlign: 'center',
-                                                                  margin: 'auto',
-                                                                  padding: '10px',
-                                                              }
-                                                            : {
-                                                                  marginBottom: '10px',
-                                                                  width: '25%',
-                                                                  textAlign: 'center',
-                                                                  margin: 'auto',
-                                                              }
-                                                    }
-                                                    appearance="primary"
-                                                    label="Validate App(s)"
-                                                    type="submit"
-                                                    disabled={file ? false : true}
-                                                    onClick={validateApps}
-                                                />
-                                            </>
+                                            </div>
                                         ) : (
                                             <></>
                                         )}
 
-                                        {finalReport.reports !== undefined && !invalidUserError ? (
-                                            <div style={{ textAlign: 'center', margin: 'auto' }}>
-                                                <Heading
-                                                    style={{ textAlign: 'center', margin: 'auto' }}
-                                                    level={2}
-                                                >
-                                                    App Validation Complete
-                                                </Heading>
-                                                <br />
+                                        <>
+                                            {token && finalReport.reports == undefined ? (
+                                                <>
+                                                    <div>
+                                                        <AppInspectTags
+                                                            style={{
+                                                                textAlign: 'center',
+                                                                paddingTop: '10px',
+                                                            }}
+                                                            selector={handleSelectTags}
+                                                            selectedTags={selectedTags}
+                                                        ></AppInspectTags>
+                                                    </div>
+                                                    {uploadError ? (
+                                                        <>
+                                                            <SplunkThemeProvider
+                                                                family="enterprise"
+                                                                colorScheme={theme}
+                                                                density="comfortable"
+                                                            >
+                                                                <Message
+                                                                    appearance="fill"
+                                                                    type="error"
+                                                                    style={{
+                                                                        marginLeft: 'auto',
+                                                                        marginRight: 'auto',
+                                                                        padding: 'auto',
+                                                                        textAlign: 'center',
+                                                                        width: '30%',
+                                                                    }}
+                                                                >
+                                                                    {uploadError}
+                                                                </Message>
+                                                            </SplunkThemeProvider>
+                                                        </>
+                                                    ) : (
+                                                        <></>
+                                                    )}
+                                                    <div
+                                                        style={{
+                                                            width: '50%',
+                                                            textAlign: 'center',
+                                                            justifyContent: 'center',
+                                                            margin: 'auto',
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: '100%',
+                                                                display: 'block',
+                                                            }}
+                                                        >
+                                                            <File
+                                                                onRequestAdd={handleAddFiles}
+                                                                onRequestRemove={handleRemoveFile}
+                                                                error={
+                                                                    uploadError !== null
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                supportsMessage={
+                                                                    <>
+                                                                        Supports the following
+                                                                        Splunk App file types: .gz,
+                                                                        .tgz, .zip, .spl, .tar
+                                                                    </>
+                                                                }
+                                                                style={{
+                                                                    width: '100%',
+                                                                    textAlign: 'center',
+                                                                    justifyContent: 'center',
+                                                                    margin: 'auto',
+                                                                }}
+                                                                help={
+                                                                    <>
+                                                                        Learn more about{' '}
+                                                                        <Link
+                                                                            target="_new"
+                                                                            to="https://dev.splunk.com/enterprise/reference/appinspect/appinspectapiepref#Splunk-AppInspect-API"
+                                                                        >
+                                                                            Splunk App File Types
+                                                                        </Link>
+                                                                    </>
+                                                                }
+
+                                                                // allowMultiple
+                                                            >
+                                                                {file ? (
+                                                                    <File.Item
+                                                                        name={file.name}
+                                                                        error={
+                                                                            uploadError !== null
+                                                                                ? true
+                                                                                : false
+                                                                        }
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justifyContent:
+                                                                                'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <></>
+                                                                )}
+                                                            </File>
+                                                        </div>
+                                                    </div>{' '}
+                                                    <div style={{ textAlign: 'center' }}>
+                                                        <P style={{ textAlign: 'center' }}>
+                                                            Learn more about{' '}
+                                                            <Link
+                                                                target="_new"
+                                                                to="https://dev.splunk.com/enterprise/reference/appinspect/appinspectapiepref#Splunk-AppInspect-API"
+                                                            >
+                                                                Splunk App File Types
+                                                            </Link>
+                                                        </P>
+                                                    </div>
+                                                    <br />
+                                                    <Button
+                                                        inline={false}
+                                                        style={
+                                                            isMobile
+                                                                ? {
+                                                                      marginBottom: '10px',
+                                                                      width: '75%',
+                                                                      textAlign: 'center',
+                                                                      margin: 'auto',
+                                                                      padding: '10px',
+                                                                  }
+                                                                : {
+                                                                      marginBottom: '10px',
+                                                                      width: '25%',
+                                                                      textAlign: 'center',
+                                                                      margin: 'auto',
+                                                                  }
+                                                        }
+                                                        appearance="primary"
+                                                        label="Validate App(s)"
+                                                        type="submit"
+                                                        disabled={file ? false : true}
+                                                        onClick={validateApps}
+                                                    />
+                                                </>
+                                            ) : (
+                                                <></>
+                                            )}
+
+                                            {finalReport.reports !== undefined &&
+                                            !invalidUserError ? (
                                                 <div
-                                                    style={{
-                                                        textAlign: 'center',
-                                                        margin: 'auto',
-                                                        style: '25%',
-                                                    }}
+                                                    style={{ textAlign: 'center', margin: 'auto' }}
                                                 >
-                                                    {errorSummary}
+                                                    <Heading
+                                                        style={{
+                                                            textAlign: 'center',
+                                                            margin: 'auto',
+                                                        }}
+                                                        level={2}
+                                                    >
+                                                        App Validation Complete
+                                                    </Heading>
+                                                    <br />
+                                                    <div
+                                                        style={{
+                                                            textAlign: 'center',
+                                                            margin: 'auto',
+                                                            style: '25%',
+                                                        }}
+                                                    >
+                                                        {errorSummary}
+                                                    </div>
+                                                    <br />
+                                                    <P style={{ textAlign: 'center' }}>
+                                                        Come back any time to view your report:
+                                                    </P>
+                                                    <Link
+                                                        to={
+                                                            'https://appinspect.vercel.app/?request_id=' +
+                                                            request_id
+                                                        }
+                                                    >
+                                                        {'https://appinspect.vercel.app/?request_id=' +
+                                                            request_id}
+                                                    </Link>
+                                                    <br />
+                                                    <br />
+
+                                                    <Button
+                                                        appearance="destructive"
+                                                        onClick={(e) => refreshPage(e)}
+                                                        style={{ backgroundColor: '#63BE09' }}
+                                                    >
+                                                        Ready to upload another app?
+                                                    </Button>
+                                                    <Button
+                                                        appearance="primary"
+                                                        onClick={(e) => downloadReport(e)}
+                                                    >
+                                                        Download Report
+                                                    </Button>
+                                                    <Button
+                                                        appearance="primary"
+                                                        onClick={(e) => emailAppinspect(e)}
+                                                    >
+                                                        Have other questions?
+                                                    </Button>
+
+                                                    <br />
+                                                    <div id="report" style={{ marginTop: 75 }}>
+                                                        <Heading
+                                                            style={{
+                                                                textAlign: 'center',
+                                                                margin: 'auto',
+                                                            }}
+                                                            level={1}
+                                                        >
+                                                            {finalReport.reports[0].app_name}
+                                                        </Heading>
+                                                        <Heading
+                                                            style={{
+                                                                textAlign: 'center',
+                                                                margin: 'auto',
+                                                            }}
+                                                            level={2}
+                                                        >
+                                                            {finalReport.reports[0].app_description}
+                                                        </Heading>
+                                                        <TabLayout
+                                                            style={{
+                                                                width: '75%',
+                                                                textAlign: 'center',
+                                                                justify: 'center',
+                                                                margin: 'auto',
+                                                            }}
+                                                            defaultActivePanelId={'error'}
+                                                            activePanelId={defaultTabLayout}
+                                                            onChange={changePanelID}
+                                                        >
+                                                            <AppinspectReportTab
+                                                                icon={
+                                                                    <Error
+                                                                        style={{ color: '#A80000' }}
+                                                                    />
+                                                                }
+                                                                disabled={
+                                                                    finalReport.summary.failure == 0
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                count={finalReport.summary.failure}
+                                                                label={
+                                                                    'Failures - ' +
+                                                                    String(
+                                                                        finalReport.summary.failure
+                                                                    )
+                                                                }
+                                                                panelId="failure"
+                                                                check_result="failure"
+                                                                finalreport_groups={
+                                                                    finalReport.reports[0].groups
+                                                                }
+                                                            ></AppinspectReportTab>
+
+                                                            <AppinspectReportTab
+                                                                icon={
+                                                                    <Warning
+                                                                        style={{ color: '#A05F04' }}
+                                                                    />
+                                                                }
+                                                                disabled={
+                                                                    finalReport.summary
+                                                                        .manual_check == 0
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                count={
+                                                                    finalReport.summary.manual_check
+                                                                }
+                                                                label={
+                                                                    'Manual Checks - ' +
+                                                                    String(
+                                                                        finalReport.summary
+                                                                            .manual_check
+                                                                    )
+                                                                }
+                                                                panelId="manual_check"
+                                                                check_result="manual_check"
+                                                                finalreport_groups={
+                                                                    finalReport.reports[0].groups
+                                                                }
+                                                            ></AppinspectReportTab>
+
+                                                            <AppinspectReportTab
+                                                                icon={
+                                                                    <Warning
+                                                                        style={{ color: '#A05F04' }}
+                                                                    />
+                                                                }
+                                                                disabled={
+                                                                    finalReport.summary.warning == 0
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                count={finalReport.summary.warning}
+                                                                label={
+                                                                    'Warning - ' +
+                                                                    String(
+                                                                        finalReport.summary.warning
+                                                                    )
+                                                                }
+                                                                panelId="warning"
+                                                                check_result="warning"
+                                                                finalreport_groups={
+                                                                    finalReport.reports[0].groups
+                                                                }
+                                                            ></AppinspectReportTab>
+
+                                                            <AppinspectReportTab
+                                                                icon={
+                                                                    <InfoCircle
+                                                                        style={{ color: '#004FA8' }}
+                                                                    />
+                                                                }
+                                                                disabled={
+                                                                    finalReport.summary
+                                                                        .not_applicable == 0
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                count={
+                                                                    finalReport.summary
+                                                                        .not_applicable
+                                                                }
+                                                                label={
+                                                                    'Not Applicable - ' +
+                                                                    String(
+                                                                        finalReport.summary
+                                                                            .not_applicable
+                                                                    )
+                                                                }
+                                                                panelId="not_applicable"
+                                                                check_result="not_applicable"
+                                                                finalreport_groups={
+                                                                    finalReport.reports[0].groups
+                                                                }
+                                                            ></AppinspectReportTab>
+
+                                                            <AppinspectReportTab
+                                                                icon={
+                                                                    <InfoCircle
+                                                                        style={{ color: '#004FA8' }}
+                                                                    />
+                                                                }
+                                                                disabled={
+                                                                    finalReport.summary.skipped == 0
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                count={finalReport.summary.skipped}
+                                                                label={
+                                                                    'Skipped - ' +
+                                                                    String(
+                                                                        finalReport.summary.skipped
+                                                                    )
+                                                                }
+                                                                panelId="skipped"
+                                                                check_result="skipped"
+                                                                finalreport_groups={
+                                                                    finalReport.reports[0].groups
+                                                                }
+                                                            ></AppinspectReportTab>
+
+                                                            <AppinspectReportTab
+                                                                icon={
+                                                                    <Success
+                                                                        style={{ color: '#407A06' }}
+                                                                    />
+                                                                }
+                                                                disabled={
+                                                                    finalReport.summary.success == 0
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                count={finalReport.summary.success}
+                                                                label={
+                                                                    'Successes - ' +
+                                                                    String(
+                                                                        finalReport.summary.success
+                                                                    )
+                                                                }
+                                                                panelId="success"
+                                                                check_result="success"
+                                                                finalreport_groups={
+                                                                    finalReport.reports[0].groups
+                                                                }
+                                                            ></AppinspectReportTab>
+
+                                                            <AppinspectReportTab
+                                                                icon={
+                                                                    <Error
+                                                                        style={{ color: '#A80000' }}
+                                                                    />
+                                                                }
+                                                                disabled={
+                                                                    finalReport.summary.error == 0
+                                                                        ? true
+                                                                        : false
+                                                                }
+                                                                count={finalReport.summary.error}
+                                                                label={
+                                                                    'Errors - ' +
+                                                                    String(
+                                                                        finalReport.summary.error
+                                                                    )
+                                                                }
+                                                                panelId="error"
+                                                                check_result="error"
+                                                                finalreport_groups={
+                                                                    finalReport.reports[0].groups
+                                                                }
+                                                            ></AppinspectReportTab>
+
+                                                            <TabLayout.Panel
+                                                                label="App Info"
+                                                                panelId="info"
+                                                                style={{
+                                                                    textAlign: 'center',
+                                                                    justify: 'center',
+                                                                    margin: 'auto',
+                                                                }}
+                                                            >
+                                                                <Card
+                                                                    minWidth="100%"
+                                                                    style={{
+                                                                        textAlign: 'center',
+                                                                        justify: 'center',
+                                                                        margin: 'auto',
+                                                                    }}
+                                                                >
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        Author
+                                                                    </Heading>
+                                                                    <p>
+                                                                        {
+                                                                            finalReport.reports[0]
+                                                                                .app_author
+                                                                        }
+                                                                    </p>
+
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        Version
+                                                                    </Heading>
+                                                                    <p>
+                                                                        {
+                                                                            finalReport.reports[0]
+                                                                                .app_version
+                                                                        }
+                                                                    </p>
+
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        Hash
+                                                                    </Heading>
+                                                                    <p>
+                                                                        {
+                                                                            finalReport.reports[0]
+                                                                                .app_hash
+                                                                        }
+                                                                    </p>
+
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        AppInspect Request ID
+                                                                    </Heading>
+                                                                    <p>
+                                                                        {
+                                                                            finalReport.reports[0]
+                                                                                .request_id
+                                                                        }
+                                                                    </p>
+
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        Run Time
+                                                                    </Heading>
+                                                                    <p>
+                                                                        {
+                                                                            finalReport.reports[0]
+                                                                                .metrics.start_time
+                                                                        }
+                                                                    </p>
+
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        Execution Time
+                                                                    </Heading>
+                                                                    <p>
+                                                                        {Date(
+                                                                            finalReport.reports[0]
+                                                                                .metrics
+                                                                                .execution_time
+                                                                        )}
+                                                                    </p>
+
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        AppInspect Version
+                                                                    </Heading>
+                                                                    <p>
+                                                                        {
+                                                                            finalReport
+                                                                                .run_parameters
+                                                                                .appinspect_version
+                                                                        }
+                                                                    </p>
+
+                                                                    <Heading
+                                                                        level={3}
+                                                                        style={{
+                                                                            textAlign: 'center',
+                                                                            justify: 'center',
+                                                                            margin: 'auto',
+                                                                        }}
+                                                                    >
+                                                                        Included Tags
+                                                                    </Heading>
+                                                                    <div>
+                                                                        {finalReport.run_parameters.included_tags.map(
+                                                                            (tag, key) => (
+                                                                                <Chip key={key}>
+                                                                                    {tag}
+                                                                                </Chip>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                </Card>
+                                                            </TabLayout.Panel>
+                                                        </TabLayout>
+                                                    </div>
                                                 </div>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div style={{ textAlign: 'center', margin: 'auto' }}>
+                                            <Heading
+                                                style={{ textAlign: 'center', margin: 'auto' }}
+                                                level={2}
+                                            >
+                                                Validating Splunk App
+                                            </Heading>
+                                            <br />
+                                            <WaitSpinner size="large" />
+                                            <br />
+                                            <P style={{ textAlign: 'center', margin: 'auto' }}>
+                                                Elapsed Time: {elapsedTime} Seconds
+                                            </P>
+                                            <br />
+                                            <P style={{ textAlign: 'center', margin: 'auto' }}>
+                                                Don&#39;t feel like waiting? Save this link to come
+                                                back any time while we process your app.
                                                 <br />
-                                                <P style={{ textAlign: 'center' }}>
-                                                    Come back any time to view your report:
-                                                </P>
                                                 <Link
                                                     to={
                                                         'https://appinspect.vercel.app/?request_id=' +
@@ -939,479 +1419,62 @@ export default function Home() {
                                                     {'https://appinspect.vercel.app/?request_id=' +
                                                         request_id}
                                                 </Link>
-                                                <br />
-                                                <br />
-
-                                                <Button
-                                                    appearance="destructive"
-                                                    onClick={(e) => refreshPage(e)}
-                                                    style={{ backgroundColor: '#63BE09' }}
-                                                >
-                                                    Ready to upload another app?
-                                                </Button>
-                                                <Button
-                                                    appearance="primary"
-                                                    onClick={(e) => downloadReport(e)}
-                                                >
-                                                    Download Report
-                                                </Button>
-                                                <Button
-                                                    appearance="primary"
-                                                    onClick={(e) => emailAppinspect(e)}
-                                                >
-                                                    Have other questions?
-                                                </Button>
-
-                                                <br />
-                                                <div id="report" style={{ marginTop: 75 }}>
-                                                    <Heading
-                                                        style={{
-                                                            textAlign: 'center',
-                                                            margin: 'auto',
-                                                        }}
-                                                        level={1}
-                                                    >
-                                                        {finalReport.reports[0].app_name}
-                                                    </Heading>
-                                                    <Heading
-                                                        style={{
-                                                            textAlign: 'center',
-                                                            margin: 'auto',
-                                                        }}
-                                                        level={2}
-                                                    >
-                                                        {finalReport.reports[0].app_description}
-                                                    </Heading>
-                                                    <TabLayout
-                                                        style={{
-                                                            width: '75%',
-                                                            textAlign: 'center',
-                                                            justify: 'center',
-                                                            margin: 'auto',
-                                                        }}
-                                                        defaultActivePanelId={'error'}
-                                                        activePanelId={defaultTabLayout}
-                                                        onChange={changePanelID}
-                                                    >
-                                                        <AppinspectReportTab
-                                                            icon={
-                                                                <Error
-                                                                    style={{ color: '#A80000' }}
-                                                                />
-                                                            }
-                                                            disabled={
-                                                                finalReport.summary.failure == 0
-                                                                    ? true
-                                                                    : false
-                                                            }
-                                                            count={finalReport.summary.failure}
-                                                            label={
-                                                                'Failures - ' +
-                                                                String(finalReport.summary.failure)
-                                                            }
-                                                            panelId="failure"
-                                                            check_result="failure"
-                                                            finalreport_groups={
-                                                                finalReport.reports[0].groups
-                                                            }
-                                                        ></AppinspectReportTab>
-
-                                                        <AppinspectReportTab
-                                                            icon={
-                                                                <Warning
-                                                                    style={{ color: '#A05F04' }}
-                                                                />
-                                                            }
-                                                            disabled={
-                                                                finalReport.summary.manual_check ==
-                                                                0
-                                                                    ? true
-                                                                    : false
-                                                            }
-                                                            count={finalReport.summary.manual_check}
-                                                            label={
-                                                                'Manual Checks - ' +
-                                                                String(
-                                                                    finalReport.summary.manual_check
-                                                                )
-                                                            }
-                                                            panelId="manual_check"
-                                                            check_result="manual_check"
-                                                            finalreport_groups={
-                                                                finalReport.reports[0].groups
-                                                            }
-                                                        ></AppinspectReportTab>
-
-                                                        <AppinspectReportTab
-                                                            icon={
-                                                                <Warning
-                                                                    style={{ color: '#A05F04' }}
-                                                                />
-                                                            }
-                                                            disabled={
-                                                                finalReport.summary.warning == 0
-                                                                    ? true
-                                                                    : false
-                                                            }
-                                                            count={finalReport.summary.warning}
-                                                            label={
-                                                                'Warning - ' +
-                                                                String(finalReport.summary.warning)
-                                                            }
-                                                            panelId="warning"
-                                                            check_result="warning"
-                                                            finalreport_groups={
-                                                                finalReport.reports[0].groups
-                                                            }
-                                                        ></AppinspectReportTab>
-
-                                                        <AppinspectReportTab
-                                                            icon={
-                                                                <InfoCircle
-                                                                    style={{ color: '#004FA8' }}
-                                                                />
-                                                            }
-                                                            disabled={
-                                                                finalReport.summary
-                                                                    .not_applicable == 0
-                                                                    ? true
-                                                                    : false
-                                                            }
-                                                            count={
-                                                                finalReport.summary.not_applicable
-                                                            }
-                                                            label={
-                                                                'Not Applicable - ' +
-                                                                String(
-                                                                    finalReport.summary
-                                                                        .not_applicable
-                                                                )
-                                                            }
-                                                            panelId="not_applicable"
-                                                            check_result="not_applicable"
-                                                            finalreport_groups={
-                                                                finalReport.reports[0].groups
-                                                            }
-                                                        ></AppinspectReportTab>
-
-                                                        <AppinspectReportTab
-                                                            icon={
-                                                                <InfoCircle
-                                                                    style={{ color: '#004FA8' }}
-                                                                />
-                                                            }
-                                                            disabled={
-                                                                finalReport.summary.skipped == 0
-                                                                    ? true
-                                                                    : false
-                                                            }
-                                                            count={finalReport.summary.skipped}
-                                                            label={
-                                                                'Skipped - ' +
-                                                                String(finalReport.summary.skipped)
-                                                            }
-                                                            panelId="skipped"
-                                                            check_result="skipped"
-                                                            finalreport_groups={
-                                                                finalReport.reports[0].groups
-                                                            }
-                                                        ></AppinspectReportTab>
-
-                                                        <AppinspectReportTab
-                                                            icon={
-                                                                <Success
-                                                                    style={{ color: '#407A06' }}
-                                                                />
-                                                            }
-                                                            disabled={
-                                                                finalReport.summary.success == 0
-                                                                    ? true
-                                                                    : false
-                                                            }
-                                                            count={finalReport.summary.success}
-                                                            label={
-                                                                'Successes - ' +
-                                                                String(finalReport.summary.success)
-                                                            }
-                                                            panelId="success"
-                                                            check_result="success"
-                                                            finalreport_groups={
-                                                                finalReport.reports[0].groups
-                                                            }
-                                                        ></AppinspectReportTab>
-
-                                                        <AppinspectReportTab
-                                                            icon={
-                                                                <Error
-                                                                    style={{ color: '#A80000' }}
-                                                                />
-                                                            }
-                                                            disabled={
-                                                                finalReport.summary.error == 0
-                                                                    ? true
-                                                                    : false
-                                                            }
-                                                            count={finalReport.summary.error}
-                                                            label={
-                                                                'Errors - ' +
-                                                                String(finalReport.summary.error)
-                                                            }
-                                                            panelId="error"
-                                                            check_result="error"
-                                                            finalreport_groups={
-                                                                finalReport.reports[0].groups
-                                                            }
-                                                        ></AppinspectReportTab>
-
-                                                        <TabLayout.Panel
-                                                            label="App Info"
-                                                            panelId="info"
-                                                            style={{
-                                                                textAlign: 'center',
-                                                                justify: 'center',
-                                                                margin: 'auto',
-                                                            }}
-                                                        >
-                                                            <Card
-                                                                minWidth="100%"
-                                                                style={{
-                                                                    textAlign: 'center',
-                                                                    justify: 'center',
-                                                                    margin: 'auto',
-                                                                }}
-                                                            >
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    Author
-                                                                </Heading>
-                                                                <p>
-                                                                    {
-                                                                        finalReport.reports[0]
-                                                                            .app_author
-                                                                    }
-                                                                </p>
-
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    Version
-                                                                </Heading>
-                                                                <p>
-                                                                    {
-                                                                        finalReport.reports[0]
-                                                                            .app_version
-                                                                    }
-                                                                </p>
-
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    Hash
-                                                                </Heading>
-                                                                <p>
-                                                                    {
-                                                                        finalReport.reports[0]
-                                                                            .app_hash
-                                                                    }
-                                                                </p>
-
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    AppInspect Request ID
-                                                                </Heading>
-                                                                <p>
-                                                                    {
-                                                                        finalReport.reports[0]
-                                                                            .request_id
-                                                                    }
-                                                                </p>
-
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    Run Time
-                                                                </Heading>
-                                                                <p>
-                                                                    {
-                                                                        finalReport.reports[0]
-                                                                            .metrics.start_time
-                                                                    }
-                                                                </p>
-
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    Execution Time
-                                                                </Heading>
-                                                                <p>
-                                                                    {Date(
-                                                                        finalReport.reports[0]
-                                                                            .metrics.execution_time
-                                                                    )}
-                                                                </p>
-
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    AppInspect Version
-                                                                </Heading>
-                                                                <p>
-                                                                    {
-                                                                        finalReport.run_parameters
-                                                                            .appinspect_version
-                                                                    }
-                                                                </p>
-
-                                                                <Heading
-                                                                    level={3}
-                                                                    style={{
-                                                                        textAlign: 'center',
-                                                                        justify: 'center',
-                                                                        margin: 'auto',
-                                                                    }}
-                                                                >
-                                                                    Included Tags
-                                                                </Heading>
-                                                                <div>
-                                                                    {finalReport.run_parameters.included_tags.map(
-                                                                        (tag, key) => (
-                                                                            <Chip key={key}>
-                                                                                {tag}
-                                                                            </Chip>
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            </Card>
-                                                        </TabLayout.Panel>
-                                                    </TabLayout>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <></>
-                                        )}
-                                    </>
-                                </>
-                            ) : (
-                                <>
-                                    <div style={{ textAlign: 'center', margin: 'auto' }}>
-                                        <Heading
-                                            style={{ textAlign: 'center', margin: 'auto' }}
-                                            level={2}
-                                        >
-                                            Validating Splunk App
-                                        </Heading>
-                                        <br />
-                                        <WaitSpinner size="large" />
-                                        <br />
-                                        <P style={{ textAlign: 'center', margin: 'auto' }}>
-                                            Elapsed Time: {elapsedTime} Seconds
-                                        </P>
-                                        <br />
-                                        <P style={{ textAlign: 'center', margin: 'auto' }}>
-                                            Don&#39;t feel like waiting? Save this link to come back
-                                            any time while we process your app.
+                                            </P>
                                             <br />
-                                            <Link
-                                                to={
-                                                    'https://appinspect.vercel.app/?request_id=' +
-                                                    request_id
-                                                }
-                                            >
-                                                {'https://appinspect.vercel.app/?request_id=' +
-                                                    request_id}
-                                            </Link>
-                                        </P>
-                                        <br />
-                                    </div>
-                                </>
-                            )}
-                            <br />
-                            <div style={{ textAlign: 'center' }}>
-                                <Link ref={modalToggle} onClick={() => handleRequestOpen()}>
-                                    <ReportSearch size={1} /> More Splunk Developer Resources
-                                </Link>
-                            </div>
-                            <Modal
-                                onRequestClose={() => handleRequestClose()}
-                                open={open}
-                                style={{ width: '600px' }}
-                            >
-                                <Modal.Header
-                                    title="More Developer Resources"
-                                    onRequestClose={handleRequestClose}
-                                />
-                                <Modal.Body>
-                                    <List>
-                                        <List.Item>
-                                            <Link to="https://www.splunk.com/en_us/form/scde.html">
-                                                Splunk Cloud Developer Edition
-                                            </Link>
-                                        </List.Item>
-                                        <List.Item>
-                                            <Link to="https://dev.splunk.com/">
-                                                Splunk Developer Docs
-                                            </Link>
-                                        </List.Item>
-                                    </List>
-                                </Modal.Body>
-                                <Modal.Footer>
-                                    <Button
-                                        appearance="primary"
-                                        onClick={handleRequestClose}
-                                        label="OK"
+                                        </div>
+                                    </>
+                                )}
+                                <br />
+                                <div style={{ textAlign: 'center' }}>
+                                    <Link ref={modalToggle} onClick={() => handleRequestOpen()}>
+                                        <ReportSearch size={1} /> More Splunk Developer Resources
+                                    </Link>
+                                </div>
+                                <Modal
+                                    onRequestClose={() => handleRequestClose()}
+                                    open={open}
+                                    style={{ width: '600px' }}
+                                >
+                                    <Modal.Header
+                                        title="More Developer Resources"
+                                        onRequestClose={handleRequestClose}
                                     />
-                                </Modal.Footer>
-                            </Modal>{' '}
-                            <br />
-                            <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
-                                © Copyright 2022 Splunk, Inc.
-                            </P>
-                            <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
-                                Made with{' '}
-                                <span style={{ fontSize: '16px', color: '#A80000' }}>
-                                    <Heart />
-                                </span>{' '}
-                                using <Link to="https://splunkui.splunk.com">Splunk UI</Link>
-                            </P>
-                        </td>
-                    </tr>
+                                    <Modal.Body>
+                                        <List>
+                                            <List.Item>
+                                                <Link to="https://www.splunk.com/en_us/form/scde.html">
+                                                    Splunk Cloud Developer Edition
+                                                </Link>
+                                            </List.Item>
+                                            <List.Item>
+                                                <Link to="https://dev.splunk.com/">
+                                                    Splunk Developer Docs
+                                                </Link>
+                                            </List.Item>
+                                        </List>
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <Button
+                                            appearance="primary"
+                                            onClick={handleRequestClose}
+                                            label="OK"
+                                        />
+                                    </Modal.Footer>
+                                </Modal>{' '}
+                                <br />
+                                <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
+                                    © Copyright 2022 Splunk, Inc.
+                                </P>
+                                <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
+                                    Made with{' '}
+                                    <span style={{ fontSize: '16px', color: '#A80000' }}>
+                                        <Heart />
+                                    </span>{' '}
+                                    using <Link to="https://splunkui.splunk.com">Splunk UI</Link>
+                                </P>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </SplunkThemeProvider>
         </NoSSR>
