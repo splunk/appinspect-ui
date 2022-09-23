@@ -8,6 +8,7 @@ import Error from '@splunk/react-icons/Error';
 import Warning from '@splunk/react-icons/Warning';
 import File from '@splunk/react-ui/File';
 import List from '@splunk/react-ui/List';
+import SVG from '@splunk/react-icons/SVG';
 
 import TabLayout from '@splunk/react-ui/TabLayout';
 import InfoCircle from '@splunk/react-icons/InfoCircle';
@@ -20,6 +21,17 @@ import Menu from '@splunk/react-ui/Menu';
 import { useRouter } from 'next/router';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
 import NoSSR from 'react-no-ssr';
+
+function Heart(props) {
+    return (
+        <SVG version="1.1" viewBox="0 0 700 700">
+            <path
+                d="m588.46 93.332v-41.531h-28.465v-33.133h-158.2v33.133h-33.133v41.531h-37.336v-41.531h-37.332v-33.133h-154v33.133h-32.668v41.531h-37.332v149.34h37.332v74.668l32.668-0.003907v41.535h37.332v37.801h42v32.664h37.336v37.336h37.332v37.332h37.332v37.332h37.332l0.003907-37.332h33.133v-37.332h41.531v-37.336h41.535v-32.664h33.133v-37.332l42-0.003907v-42h28.934v-74.664h41.066v-149.34zm-331.8 0h-74.668v145.13h-42v-145.13h42v-41.531h74.668z"
+                fill="#FF0000"
+            />
+        </SVG>
+    );
+}
 
 const Modal = dynamic(() => import('@splunk/react-ui/Modal'), {
     ssr: false,
@@ -1137,11 +1149,14 @@ export default function Home() {
                 </Modal>{' '}
                 <br />
                 <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
-                    Made with <Link to="https://splunkui.splunk.com">Splunk UI</Link>
-                </P>
-                <br />
-                <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
                     © Copyright 2022 Splunk, Inc.
+                </P>
+                <P style={{ margin: 'auto', textAlign: 'center' }} level={4}>
+                    Made with{' '}
+                    <span style={{ fontSize: '16px', color: '#A80000' }}>
+                        <Heart />
+                    </span>{' '}
+                    using <Link to="https://splunkui.splunk.com">Splunk UI</Link>
                 </P>
             </SplunkThemeProvider>
         </NoSSR>
