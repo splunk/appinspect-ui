@@ -45,8 +45,10 @@ app.get('/api/validateapp', (req, res) => {
             var data;
             try {
                 data = await response.json();
+                console.log(response);
             } catch {
                 data = await response.body();
+                console.log(response);
             }
             throw { data: data, status: response.status };
         })

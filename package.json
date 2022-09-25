@@ -26,7 +26,8 @@
     "react-device-detect": "^2.2.2",
     "react-dom": "18.2.0",
     "react-no-ssr": "^1.1.0",
-    "styled-components": "^5.3.5"
+    "styled-components": "^5.3.5",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "eslint": "8.23.1",
