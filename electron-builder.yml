@@ -1,0 +1,12 @@
+appId: com.example.nextron
+productName: Appinspect UI
+copyright: Copyright © 2022 Ryan O'Connor
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+publish: null

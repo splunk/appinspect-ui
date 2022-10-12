@@ -1,23 +1,19 @@
 import { deleteCookie, getCookie, setCookie } from 'cookies-next';
 import SplunkThemeProvider from '@splunk/themes/SplunkThemeProvider';
 import dynamic from 'next/dynamic';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React,  { useEffect, useRef, useCallback } from 'react';
+import {useState} from 'react';
 import User from '@splunk/react-icons/User';
-import Monogram, { getInitials } from '@splunk/react-ui/Monogram';
 import Error from '@splunk/react-icons/Error';
 import Warning from '@splunk/react-icons/Warning';
-import File from '@splunk/react-ui/File';
-import List from '@splunk/react-ui/List';
 import SVG from '@splunk/react-icons/SVG';
 
-import TabLayout from '@splunk/react-ui/TabLayout';
 import InfoCircle from '@splunk/react-icons/InfoCircle';
 import Success from '@splunk/react-icons/Success';
 import ReportSearch from '@splunk/react-icons/ReportSearch';
 
 import AppInspectTags from './components/AppInspectTags';
 import AppinspectReportTab from './components/AppinspectReportTab';
-import Menu from '@splunk/react-ui/Menu';
 import { useRouter } from 'next/router';
 import { isMobile } from 'react-device-detect';
 import NoSSR from 'react-no-ssr';
@@ -33,9 +29,43 @@ function Heart(props) {
     );
 }
 
+
+const TabLayout = dynamic(() => import('@splunk/react-ui/TabLayout'), {
+  ssr: false,
+});
+
+TabLayout.Panel = dynamic(() => import('@splunk/react-ui/TabLayout').then((mod) => mod.Panel), {
+  ssr: false,
+});
+
+const File = dynamic(() => import('@splunk/react-ui/File'), {
+  ssr: false,
+});
+
+const Menu = dynamic(() => import('@splunk/react-ui/Menu'), {
+  ssr: false,
+});
+
+Menu.Item = dynamic(() => import('@splunk/react-ui/Menu').then((mod) => mod.Item), {
+  ssr: false,
+});
+Menu.Divider = dynamic(() => import('@splunk/react-ui/Menu').then((mod) => mod.Divider), {
+  ssr: false,
+});
+
+const List = dynamic(() => import('@splunk/react-ui/List'), {
+  ssr: false,
+});
+
+
+List.Item = dynamic(() => import('@splunk/react-ui/List').then((mod) => mod.Item), {
+  ssr: false,
+});
+
 const Modal = dynamic(() => import('@splunk/react-ui/Modal'), {
     ssr: false,
 });
+
 Modal.Header = dynamic(() => import('@splunk/react-ui/Modal').then((mod) => mod.Header), {
     ssr: false,
 });
@@ -49,6 +79,11 @@ Modal.Footer = dynamic(() => import('@splunk/react-ui/Modal').then((mod) => mod.
 const Heading = dynamic(() => import('@splunk/react-ui/Heading'), {
     ssr: false,
 });
+
+const Monogram = dynamic(() => import('@splunk/react-ui/Monogram'), {
+  ssr: false,
+});
+
 
 const Popover = dynamic(() => import('@splunk/react-ui/Popover'), {
     ssr: false,
@@ -137,7 +172,6 @@ async function checkstatus(
                     return { status: { status: 'invalid_user' } };
                 });
 
-            console.log(status);
 
             if (status.status.status == 'invalid_user') {
                 delete router.query.request_id;
@@ -220,7 +254,7 @@ export default function Home() {
     const [selectedTags, setSelectedTags] = useState(['cloud']);
     const [lookupError, setLookupError] = useState(null);
     const [uploadError, setUploadError] = useState(null);
-    const [file, setFile] = useState();
+    const [file, setFile] = useState("");
     const [errorSummary, setErrorSummary] = useState(<></>);
 
     const [defaultTabLayout, setDefaultTabLayout] = useState('error');
@@ -389,24 +423,27 @@ export default function Home() {
     };
 
     //Load the file when it is dropped onto the File component
-    function loadFile(file) {
-        const fileItem = { name: file.name };
+        //Load the file when it is dropped onto the File component
+        function loadFile(file) {
+          const fileItem = { name: file.name };
+  
+          const fileReader = new FileReader();
+          fileReader.onload = () => {
+              fileItem.value = fileReader.result;
+          };
+          fileReader.readAsDataURL(file);
+  
+          return fileItem;
+      }
+  
+      const handleAddFiles = (files) => {
+          if (files) {
+              setFile(loadFile(files));
+              setUploadError(null);
+          }
+      };
 
-        const fileReader = new FileReader();
-        fileReader.onload = () => {
-            fileItem.value = fileReader.result;
-        };
-        fileReader.readAsDataURL(file);
 
-        return fileItem;
-    }
-
-    const handleAddFiles = (files) => {
-        if (files.length > 0) {
-            setFile(loadFile(files[0]));
-            setUploadError(null);
-        }
-    };
 
     const handleRemoveFile = ({ index }) => {
         setFile(null);
@@ -454,13 +491,12 @@ export default function Home() {
             }),
         })
             .then(async (response) => {
-                console.log(response);
                 if (response.ok) {
                     return response.json();
                 } else if (response.status == 413) {
                     throw { message: 'App package too large' };
                 }
-
+ 
                 var data;
                 try {
                     data = await response.json();
@@ -633,10 +669,13 @@ export default function Home() {
         setPopoverOpen(false);
     };
 
+
     return (
+       
         <NoSSR>
             <SplunkThemeProvider family="prisma" colorScheme={theme} density="comfortable">
                 <table style={{ width: '100%' }}>
+                  <tbody>
                     <tr>
                         <td>
                             <div>
@@ -657,7 +696,7 @@ export default function Home() {
                                                         margin: '10px',
                                                     }}
                                                     backgroundColor="auto"
-                                                    initials={getInitials(fullName)}
+                                                    initials={"RO"}
                                                     onClick={() => setPopoverOpen(true)}
                                                     elementRef={monogramAnchorRef}
                                                 />{' '}
@@ -737,7 +776,7 @@ export default function Home() {
                                             }}
                                         >
                                             <img
-                                                src="/wizard.svg"
+                                                src='wizard.svg'
                                                 style={{
                                                     textAlign: 'center',
                                                     justify: 'center',
@@ -756,7 +795,7 @@ export default function Home() {
                                             }}
                                         >
                                             <img
-                                                src="/wizard.svg"
+                                                src='wizard.svg'
                                                 style={{
                                                     textAlign: 'center',
                                                     justify: 'center',
@@ -859,9 +898,9 @@ export default function Home() {
                                                     <br />
                                                     <br />
                                                     {isLoggingIn ? (
-                                                        <>
+                                                       <div style={{textAlign:'center', width:'100%'}}>
                                                             <WaitSpinner size="large" />
-                                                        </>
+                                                        </div>
                                                     ) : (
                                                         <>
                                                             <Button
@@ -934,8 +973,13 @@ export default function Home() {
                                                     <div
                                                         style={{ width: '100%', display: 'block' }}
                                                     >
-                                                        <File
-                                                            onRequestAdd={handleAddFiles}
+                                                      {/*}  <File
+                                                            onRequestAdd={(files) => {
+                                                                if (files.length > 0) {
+                                                                    setFile(loadFile(files[0]));
+                                                                    setUploadError(null);
+                                                                }
+                                                            }}
                                                             onRequestRemove={handleRemoveFile}
                                                             error={
                                                                 uploadError !== null ? true : false
@@ -964,7 +1008,7 @@ export default function Home() {
                                                                     </Link>
                                                                 </>
                                                             }
-
+                                                            dropAnywhere
                                                             // allowMultiple
                                                         >
                                                             {file ? (
@@ -984,7 +1028,14 @@ export default function Home() {
                                                             ) : (
                                                                 <></>
                                                             )}
-                                                        </File>
+                                                            </File>*/}
+                                                       
+
+<input type="file"  onChange={e => 
+            handleAddFiles(e.target.files[0])}
+       id="splunkapp" name="splunkapp"
+       accept=".gz, .tgz, .zip,
+       .spl, .tar"/>
                                                     </div>
                                                 </div>{' '}
                                                 <div style={{ textAlign: 'center' }}>
@@ -1458,7 +1509,10 @@ export default function Home() {
                                             Validating Splunk App
                                         </Heading>
                                         <br />
-                                        <WaitSpinner size="large" />
+                                        <div style={{textAlign:'center', width:'100%', margin:'auto'}}>
+
+                                        <WaitSpinner  style={{textAlign:'center', width:'100%', margin:'auto'}} size="large" />
+                                        </div>
                                         <br />
                                         <P style={{ textAlign: 'center', margin: 'auto' }}>
                                             Elapsed Time: {elapsedTime} Seconds
@@ -1593,8 +1647,10 @@ export default function Home() {
                             </P>
                         </td>
                     </tr>
+                    </tbody>
                 </table>
             </SplunkThemeProvider>
-        </NoSSR>
+        </NoSSR> 
     );
-}
+  }
+  
