@@ -699,7 +699,7 @@ export default function Home() {
                               margin: "10px",
                             }}
                             backgroundColor="auto"
-                            initials={"RO"}
+                            initials={""}
                             onClick={() => setPopoverOpen(true)}
                             elementRef={monogramAnchorRef}
                           />{" "}
@@ -1053,9 +1053,9 @@ export default function Home() {
                             {errorSummary}
                           </div>
                           <br />
-                          <P style={{ textAlign: "center" }}>
+                          {/*<P style={{ textAlign: "center" }}>
                             Come back any time to view your report:
-                          </P>
+                        </P>
                           <Link
                             to={
                               "https://appinspect.vercel.app/?request_id=" +
@@ -1064,7 +1064,7 @@ export default function Home() {
                           >
                             {"https://appinspect.vercel.app/?request_id=" +
                               requestId}
-                          </Link>
+                          </Link>*/}
                           <br />
                           <br />
 
@@ -1425,7 +1425,7 @@ export default function Home() {
                         Elapsed Time: {elapsedTime} Seconds
                       </P>
                       <br />
-                      <P style={{ textAlign: "center", margin: "auto" }}>
+                      {/*  <P style={{ textAlign: "center", margin: "auto" }}>
                         Don&#39;t feel like waiting? Save this link to come back
                         any time while we process your app.
                         <br />
@@ -1438,7 +1438,7 @@ export default function Home() {
                           {"https://appinspect.vercel.app/?request_id=" +
                             requestId}
                         </Link>
-                      </P>
+                        </P>*/}
                       <br />
                     </div>
                   </>

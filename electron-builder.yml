@@ -1,6 +1,6 @@
 appId: com.example.nextron
 productName: Appinspect UI
-copyright: Copyright © 2022 Ryan O'Connor
+copyright: Copyright © 2022 Splunk, Inc.
 directories:
   output: dist
   buildResources: resources

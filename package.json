@@ -3,7 +3,7 @@
   "name": "appinspect-ui",
   "description": "UI for Appinspect",
   "version": "1.0.0",
-  "author": "Ryan O'Connor <roconnor@splunk.com>",
+  "author": "Ryan O'Connor, Steve McMaster",
   "main": "app/background.js",
   "scripts": {
     "dev": "nextron",
@@ -11,7 +11,6 @@
     "build:win32": "nextron build --win --ia32",
     "postinstall": "electron-builder install-app-deps"
   },
-  
   "dependencies": {
     "@apideck/file-picker": "^0.7.0",
     "@splunk/react-ui": "4.12.1",
