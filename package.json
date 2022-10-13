@@ -2,16 +2,14 @@
   "private": true,
   "name": "appinspect-ui",
   "description": "UI for Appinspect",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "author": "Ryan O'Connor, Steve McMaster",
   "main": "app/background.js",
   "scripts": {
     "dev": "nextron",
-    "build": "nextron build",
-    "build:win32": "nextron build --win --ia32",
     "postinstall": "electron-builder install-app-deps",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "build": "electron-builder --mac --windows",
+    "release": "electron-builder --mac --windows --publish always"
   },
   "dependencies": {
     "@splunk/react-icons": "^3.2.0",
