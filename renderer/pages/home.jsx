@@ -283,7 +283,7 @@ export default function Home() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [selectedTags, setSelectedTags] = useState(["cloud"]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [lookupError, setLookupError] = useState(null);
   const [uploadError, setUploadError] = useState(null);
   const [file, setFile] = useState("");
@@ -1024,7 +1024,9 @@ export default function Home() {
                             appearance="primary"
                             label="Validate App(s)"
                             type="submit"
-                            disabled={file ? false : true}
+                            disabled={
+                              file && selectedTags.length > 0 ? false : true
+                            }
                             onClick={validateApps}
                           />
                         </>
