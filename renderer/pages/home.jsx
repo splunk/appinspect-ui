@@ -39,10 +39,6 @@ TabLayout.Panel = dynamic(
   }
 );
 
-const File = dynamic(() => import("@splunk/react-ui/File"), {
-  ssr: false,
-});
-
 const Menu = dynamic(() => import("@splunk/react-ui/Menu"), {
   ssr: false,
 });
@@ -168,37 +164,6 @@ async function checkstatus(
           return { status: json };
         });
 
-      //Now that we have a valid request ID, let's sleep and loop until our result is complete.
-      /*status = await fetch('/api/getreportstatus', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-
-                body: JSON.stringify({
-                    token: token,
-                    request_id: request_id,
-                }),
-            })
-                .then(async (res) => {
-                    if (res.ok) {
-                        return res.json();
-                    }
-
-                    var data;
-                    try {
-                        data = await res.json();
-                    } catch {
-                        data = await res.body();
-                    }
-                    throw { data: data, status: res.status };
-                })
-                .then((json) => {
-                    return json;
-                })
-                .catch((data) => {
-                    return { status: { status: 'invalid_user' } };
-                });
-*/
-
       if (status.status.status == "PROCESSING") {
         await timer(2000);
       } else if (status.status.status == "SUCCESS") {
@@ -215,25 +180,6 @@ async function checkstatus(
             setIsValidating(false);
           });
 
-        /* fetch('/api/getreport', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-
-                    body: JSON.stringify({
-                        token: token,
-                        request_id: request_id,
-                    }),
-                })
-                    .then((res) => {
-                        if (res.ok) {
-                            return res.json();
-                        }
-                        throw res;
-                    })
-                    .then((json) => {
-                        setFinalReport(json);
-                        setIsValidating(false);
-                    });*/
         break;
       } else {
         await timer(2000);
@@ -258,6 +204,7 @@ export default function Home() {
   const modalToggle = useRef(null);
   const [moreResourcesModalOpen, setMoreModalResourcesOpen] = useState(false);
   const [lookupRequestModalOpen, setLookupRequestModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   //Toggle Modal for Additional Resources
   const [open, setOpen] = useState(false);
@@ -457,21 +404,11 @@ export default function Home() {
 
   //Load the file when it is dropped onto the File component
   //Load the file when it is dropped onto the File component
-  function loadFile(file) {
-    const fileItem = { name: file.name };
-
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      fileItem.value = fileReader.result;
-    };
-    fileReader.readAsDataURL(file);
-
-    return fileItem;
-  }
 
   const handleAddFiles = (files) => {
+    console.log(files);
     if (files) {
-      setFile(loadFile(files));
+      setFile(files);
       setUploadError(null);
     }
   };
@@ -509,17 +446,21 @@ export default function Home() {
 
   /* Validation Functions */
   const validateApps = (e) => {
+    setIsUploading(true);
     ipcRenderer
       .invoke("validateapp", {
         token: token,
-        value: file.value,
-        filename: file.name,
+        name: file.name,
+        path: file.path,
         included_tags: selectedTags,
+        contenttype: file.type,
       })
       .then((data) => {
+        console.log(data);
         router.query.request_id = data.request_id;
         router.push(router);
         if (data.request_id) {
+          setIsUploading(false);
           setRequestId(data.request_id);
           setIsValidating(true);
           checkstatus(
@@ -829,7 +770,7 @@ export default function Home() {
                 ) : (
                   <></>
                 )}
-                {!isValidating ? (
+                {!isValidating && !isUploading ? (
                   <>
                     {!token ? (
                       <div
@@ -986,8 +927,7 @@ export default function Home() {
                                 }
                                 id="splunkapp"
                                 name="splunkapp"
-                                accept=".gz, .tgz, .zip,
-       .spl, .tar"
+                                accept=".gz,.tgz,.zip,.spl,.tar"
                               />
                             </div>
                           </div>{" "}
@@ -1401,7 +1341,7 @@ export default function Home() {
                         style={{ textAlign: "center", margin: "auto" }}
                         level={2}
                       >
-                        Validating Splunk App
+                        {isUploading ? "Uploading" : "Validating Splunk App"}
                       </Heading>
                       <br />
                       <div
@@ -1422,23 +1362,12 @@ export default function Home() {
                       </div>
                       <br />
                       <P style={{ textAlign: "center", margin: "auto" }}>
-                        Elapsed Time: {elapsedTime} Seconds
+                        {isUploading
+                          ? ""
+                          : "Elapsed Time: " + elapsedTime + " Seconds"}
                       </P>
                       <br />
-                      {/*  <P style={{ textAlign: "center", margin: "auto" }}>
-                        Don&#39;t feel like waiting? Save this link to come back
-                        any time while we process your app.
-                        <br />
-                        <Link
-                          to={
-                            "https://appinspect.vercel.app/?request_id=" +
-                            requestId
-                          }
-                        >
-                          {"https://appinspect.vercel.app/?request_id=" +
-                            requestId}
-                        </Link>
-                        </P>*/}
+
                       <br />
                     </div>
                   </>

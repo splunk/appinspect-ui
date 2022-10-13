@@ -1,38 +1,20 @@
 import { screen, BrowserWindow, ipcMain } from "electron";
 import Store from "electron-store";
-import axios from "axios";
 import { FormData } from "formdata-node";
 import { Readable } from "stream";
 import { FormDataEncoder } from "form-data-encoder";
-import { Blob } from "buffer";
 import fetch from "node-fetch";
-
-function dataURLtoBlob(dataURI) {
-  var byteString = atob(dataURI.split(",")[1]);
-  var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
-  var ab = new ArrayBuffer(byteString.length);
-  var ia = new Uint8Array(ab);
-  for (var i = 0; i < byteString.length; i++) {
-    ia[i] = byteString.charCodeAt(i);
-  }
-
-  try {
-    return new Blob([ia], { type: mimeString });
-  } catch (e) {}
-}
+import fs from "fs";
+import { Blob } from "buffer";
 
 ipcMain.handle("validateapp", async (event, ...args) => {
-  var string = args[0].value;
-  var regex = /^data:.+\/(.+);base64,(.*)$/;
-
-  var matches = string.match(regex);
-  var ext = matches[1];
-  var data = matches[2];
-  var buffer = Buffer.from(data, "base64");
-  var blob = new Blob(buffer);
+  let buffer = fs.readFileSync(args[0].path);
+  let blob = new Blob([buffer], {
+    type: args[0].contenttype,
+  });
 
   const form = new FormData();
-  form.append("app_package", dataURLtoBlob(args[0].value), args[0].filename);
+  form.append("app_package", blob, args[0].name);
   form.append("included_tags", args[0].included_tags);
   const encoder = new FormDataEncoder(form);
 
@@ -48,20 +30,22 @@ ipcMain.handle("validateapp", async (event, ...args) => {
     maxContentLength: Infinity,
   })
     .then(async (response) => {
+      console.log(response);
       if (response.ok) {
         return response.json();
       }
 
-      var data;
+      var responsedata;
       try {
-        data = await response.json();
+        responsedata = await response.json();
       } catch {
-        data = await response.body();
+        responsedata = await response.body();
       }
-      throw { data: data, status: response.status };
+      throw { data: responsedata, status: response.status };
     })
-    .then((data) => {
-      return data;
+    .then((finaldata) => {
+      console.log(finaldata);
+      return finaldata;
     })
     .catch((response) => {
       console.log(response);
