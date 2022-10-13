@@ -345,7 +345,7 @@ export default function Home() {
   const clickSplunkUI = (e) => {
     const shell = require("electron").shell;
     e.preventDefault();
-    shell.openExternal("https://splunkui.splunk.com");
+    shell.openExternal("https://splunkui.splunk.com?ref=appinspectui");
   };
 
   //Update Password as users are typing
