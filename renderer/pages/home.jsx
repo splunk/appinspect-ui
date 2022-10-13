@@ -475,11 +475,6 @@ export default function Home() {
     }
   };
 
-  const handleRemoveFile = ({ index }) => {
-    setFile(null);
-    setUploadError(null);
-  };
-
   const handleSelectTags = (e) => {
     var tags_array = [];
     for (var tag in e) {
