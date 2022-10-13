@@ -1,34 +1,36 @@
 {
-  "name": "appinspect-ui",
-  "version": "0.1.0",
   "private": true,
+  "name": "appinspect-ui",
+  "description": "UI for Appinspect",
+  "version": "1.0.0",
+  "author": "Ryan O'Connor, Steve McMaster",
+  "main": "app/background.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "nextron",
+    "build": "nextron build",
+    "build:win32": "nextron build --win --ia32",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "@splunk/react-ui": "4.4.1",
+    "@splunk/react-icons": "^3.2.0",
+    "@splunk/react-ui": "4.12.1",
     "@splunk/themes": "^0.13.0",
-    "@splunk/visualizations": "^25.0.1",
-    "axios": "^0.27.2",
     "cookies-next": "^2.1.1",
-    "form-data": "^4.0.0",
-    "form-data-encoder": "^2.1.2",
-    "formdata-node": "^5.0.0",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1",
-    "next": "12.3.1",
-    "prettier": "^2.7.1",
-    "react": "18.2.0",
+    "electron-serve": "^1.1.0",
+    "electron-store": "^8.1.0",
+    "form-data-encoder": "^1.7.0",
+    "formdata-node": "^4.0.0",
+    "multiselect-react-dropdown": "^2.0.25",
     "react-device-detect": "^2.2.2",
-    "react-dom": "18.2.0",
     "react-no-ssr": "^1.1.0",
-    "styled-components": "^5.3.5"
+    "styled-components": "^5.3.6"
   },
   "devDependencies": {
-    "eslint": "8.23.1",
-    "eslint-config-next": "12.3.1"
+    "electron": "^20.1.0",
+    "electron-builder": "^23.3.3",
+    "next": "^11.0.0",
+    "nextron": "^8.2.0",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0"
   }
 }

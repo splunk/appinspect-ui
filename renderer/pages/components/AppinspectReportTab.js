@@ -1,15 +1,28 @@
 import React from "react";
 import dynamic from "next/dynamic";
-import Accordion from "@splunk/react-ui/Accordion";
-import TabLayout from "@splunk/react-ui/TabLayout";
 import List from "@splunk/react-ui/List";
-const P = dynamic(() => import("@splunk/react-ui/Paragraph"), {
+
+const Accordion = dynamic(() => import("@splunk/react-ui/Accordion"), {
   ssr: false,
 });
 
-const Heading = dynamic(() => import("@splunk/react-ui/Heading"), {
+Accordion.Panel = dynamic(
+  () => import("@splunk/react-ui/Accordion").then((mod) => mod.Panel),
+  {
+    ssr: false,
+  }
+);
+
+const TabLayout = dynamic(() => import("@splunk/react-ui/TabLayout"), {
   ssr: false,
 });
+
+TabLayout.Panel = dynamic(
+  () => import("@splunk/react-ui/TabLayout").then((mod) => mod.Panel),
+  {
+    ssr: false,
+  }
+);
 
 export default function AppinspectReportTab(props) {
   return (
