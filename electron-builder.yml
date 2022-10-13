@@ -1,4 +1,4 @@
-appId: com.example.nextron
+appId: com.splunk.appinspect
 productName: Appinspect UI
 copyright: Copyright © 2022 Splunk, Inc.
 directories:
@@ -9,4 +9,9 @@ files:
     filter:
       - package.json
       - app
+mac:
+  type: development
+  darkModeSupport: true
+win:
+  target: nsis
 publish: null
