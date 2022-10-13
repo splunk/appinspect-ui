@@ -342,6 +342,13 @@ export default function Home() {
   }, []);
 
   //Update Password as users are typing
+  const clickSplunkUI = (e) => {
+    const shell = require("electron").shell;
+    e.preventDefault();
+    shell.openExternal("https://splunkui.splunk.com");
+  };
+
+  //Update Password as users are typing
   const updatePassword = (e) => {
     setPassword(e.target.value);
   };
@@ -1479,7 +1486,13 @@ export default function Home() {
                   <span style={{ fontSize: "16px", color: "#A80000" }}>
                     <Heart />
                   </span>{" "}
-                  using <Link to="https://splunkui.splunk.com">Splunk UI</Link>
+                  using{" "}
+                  <Link
+                    to="https://splunkui.splunk.com"
+                    onClick={(event) => clickSplunkUI(event)}
+                  >
+                    Splunk UI
+                  </Link>
                 </P>
               </td>
             </tr>
