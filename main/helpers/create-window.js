@@ -30,7 +30,6 @@ ipcMain.handle("validateapp", async (event, ...args) => {
     maxContentLength: Infinity,
   })
     .then(async (response) => {
-      console.log(response);
       if (response.ok) {
         return response.json();
       }
@@ -44,7 +43,6 @@ ipcMain.handle("validateapp", async (event, ...args) => {
       throw { data: responsedata, status: response.status };
     })
     .then((finaldata) => {
-      console.log(finaldata);
       return finaldata;
     })
     .catch((response) => {
