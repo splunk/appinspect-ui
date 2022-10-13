@@ -482,11 +482,9 @@ export default function Home() {
 
   const handleSelectTags = (e) => {
     var tags_array = [];
-    for (var tag in selectedTags) {
-      console.log(selectedTags[tag]);
-      tags_array.push(selectedTags[tag].name);
+    for (var tag in e) {
+      tags_array.push(e[tag].name);
     }
-    console.log(tags_array);
     setSelectedTags(tags_array);
   };
 

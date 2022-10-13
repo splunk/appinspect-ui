@@ -33,7 +33,7 @@ ipcMain.handle("validateapp", async (event, ...args) => {
 
   const form = new FormData();
   form.append("app_package", dataURLtoBlob(args[0].value), args[0].filename);
-  form.append("included_tags", "cloud");
+  form.append("included_tags", args[0].included_tags);
   const encoder = new FormDataEncoder(form);
 
   var result = fetch("https://appinspect.splunk.com/v1/app/validate", {
