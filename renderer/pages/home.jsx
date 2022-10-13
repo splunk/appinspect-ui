@@ -421,6 +421,7 @@ export default function Home() {
         password: password,
       })
       .then((data) => {
+        console.log(data);
         setIsLoggingIn(false);
 
         if (data.data === undefined) {

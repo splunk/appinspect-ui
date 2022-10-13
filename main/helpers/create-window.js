@@ -71,21 +71,18 @@ ipcMain.handle("validateapp", async (event, ...args) => {
 });
 
 ipcMain.handle("auth", async (event, ...args) => {
-  const result = await axios.get(
-    "https://api.splunk.com/2.0/rest/login/splunk",
-    {
-      method: "GET",
-      headers: {
-        Authorization:
-          "Basic " +
-          Buffer.from(args[0].username + ":" + args[0].password).toString(
-            "base64"
-          ),
-      },
-    }
-  );
-
-  return result.data;
+  var result = await fetch("https://api.splunk.com/2.0/rest/login/splunk", {
+    method: "GET",
+    headers: {
+      Authorization:
+        "Basic " +
+        Buffer.from(args[0].username + ":" + args[0].password).toString(
+          "base64"
+        ),
+    },
+  });
+  var result = await result.json();
+  return result;
 });
 
 ipcMain.handle("getreporthtml", async (event, ...args) => {
