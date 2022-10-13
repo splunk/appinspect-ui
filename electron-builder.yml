@@ -10,6 +10,7 @@ files:
       - package.json
       - app
 mac:
+  target: dmg
   type: development
   darkModeSupport: true
 win:

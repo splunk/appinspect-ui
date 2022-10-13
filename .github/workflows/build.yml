@@ -6,15 +6,21 @@ on:
     tags: [v**]
 
 jobs:
-  release:
+  build:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os:
-          - macos-latest
-          # - ubuntu-latest
-          - windows-latest
+        include:
+          - os: macos-latest
+            flags: '--mac'
+            output: 'dist/*.dmg'
+          # - os: windows-latest
+          #   flags: "--win"
+          #   output: "dist/*.exe"
+          # - os: ubuntu-latest
+          #   flags: "--linux"
+          #   output: "dist/???"
 
     steps:
       - name: Check out Git repository
@@ -25,13 +31,33 @@ jobs:
         with:
           node-version: 16
 
-      - name: Build/release Electron app
-        uses: Yan-Jobs/action-electron-builder@v1.7.0
-        with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
+      # {
+      #   "scripts": {
+      #     "build": "nextron build",
+      #     "build:all": "nextron build --all",
+      #     "build:win32": "nextron build --win --ia32",
+      #     "build:win64": "nextron build --win --x64",
+      #     "build:mac": "nextron build --mac --x64",
+      #     "build:linux": "nextron build --linux"
+      #   }
+      # }
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      - name: Build
+        run: yarn build ${{ matrix.flags }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: ${{ matrix.output }}
+
+  release:
+    steps:
+      - name: Create release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'dist/*'
+          body: '${{ github.ref }}'
+          token: ${{ secrets.YOUR_GITHUB_TOKEN }}
+          draft: true
+          prerelease: true
