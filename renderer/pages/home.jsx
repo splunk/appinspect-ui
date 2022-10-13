@@ -7,7 +7,7 @@ import User from '@splunk/react-icons/User';
 import Error from '@splunk/react-icons/Error';
 import Warning from '@splunk/react-icons/Warning';
 import SVG from '@splunk/react-icons/SVG';
-
+import {net} from  'electron'
 import InfoCircle from '@splunk/react-icons/InfoCircle';
 import Success from '@splunk/react-icons/Success';
 import ReportSearch from '@splunk/react-icons/ReportSearch';
@@ -17,6 +17,7 @@ import AppinspectReportTab from './components/AppinspectReportTab';
 import { useRouter } from 'next/router';
 import { isMobile } from 'react-device-detect';
 import NoSSR from 'react-no-ssr';
+import { ipcRenderer } from 'electron'
 
 function Heart(props) {
     return (
@@ -379,47 +380,48 @@ export default function Home() {
 
         setIsLoggingIn(true);
 
-        fetch('/api/authsplunkapi', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        ipcRenderer.invoke('auth',
+    {
+      username: username,
+      password: password,
+    }
+  )
+  .then((data) => {
+    console.log(data)
+    setIsLoggingIn(false);
 
-            body: JSON.stringify({
-                username: username,
-                password: password,
-            }),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                setIsLoggingIn(false);
+    if (data.data === undefined) {
+        if (data.msg == 'Failed to authenticate user') {
+            setLoginError('Invalid Username or Password');
+        } else {
+            setLoginError(data.msg);
+        }
+    } else {
+        //setCookie('token', data.data.token);
+        setToken(data.data.token);
+        setFullName(data.data.user.name);
+        setCookie('token', data.data.token);
 
-                if (data.data === undefined) {
-                    if (data.msg == 'Failed to authenticate user') {
-                        setLoginError('Invalid Username or Password');
-                    } else {
-                        setLoginError(data.msg);
-                    }
-                } else {
-                    //setCookie('token', data.data.token);
-                    setToken(data.data.token);
-                    setFullName(data.data.user.name);
-                    setCookie('token', data.data.token);
+        if (router.query.request_id) {
+            setIsValidating(true);
 
-                    if (router.query.request_id) {
-                        setIsValidating(true);
+            checkstatus(
+                data.data.token,
+                router.query.request_id,
+                elapsedTime,
+                setElapsedTime,
+                setFinalReport,
+                setIsValidating,
+                router,
+                setIsLoggingIn
+            );
+        }
+    }
+  }).catch((resp) => console.warn(resp))
 
-                        checkstatus(
-                            data.data.token,
-                            router.query.request_id,
-                            elapsedTime,
-                            setElapsedTime,
-                            setFinalReport,
-                            setIsValidating,
-                            router,
-                            setIsLoggingIn
-                        );
-                    }
-                }
-            });
+       
+         
+
     };
 
     //Load the file when it is dropped onto the File component
@@ -479,7 +481,39 @@ export default function Home() {
 
     /* Validation Functions */
     const validateApps = (e) => {
-        fetch('/api/validateapp', {
+
+        ipcRenderer.invoke('validateapp',
+        {
+            token: token,
+            value: file.value,
+            filename: file.name,
+            included_tags: selectedTags,
+        }
+      )
+      .then((data) => {
+        console.log(data)
+       /* router.query.request_id = data.request_id;
+        router.push(router);
+        if (data.request_id) {
+            setRequestId(data.request_id);
+            setIsValidating(true);
+            checkstatus(
+                token,
+                data.request_id,
+                elapsedTime,
+                setElapsedTime,
+                setFinalReport,
+                setIsValidating,
+                router,
+                setIsLoggingIn
+            );
+        }*/
+      })
+    }
+    
+
+
+        /*fetch('/api/validateapp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
 
@@ -530,8 +564,7 @@ export default function Home() {
                 } else {
                     setUploadError(data.message);
                 }
-            });
-    };
+            });*/
 
     //What to do if a user wants to upload a new app.
     const refreshPage = (e) => {
