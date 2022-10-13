@@ -135,16 +135,27 @@ async function checkstatus(
     setIsLoggingIn,
     setLookupError
 ) {
-    var status = '';
     var elapsed = 0;
     var sleep_seconds = 1;
-    if (token !== undefined) {
+    if (typeof token !== undefined) {
         while (true) {
             elapsed = elapsed + sleep_seconds;
             setElapsed(elapsed);
 
+            var status = await ipcRenderer.invoke('getreportstatus',
+            {
+                token: token,
+                request_id: request_id,
+            })
+            
+            .then((json) => {
+                return {status: json};
+            })
+            
+
+
             //Now that we have a valid request ID, let's sleep and loop until our result is complete.
-            status = await fetch('/api/getreportstatus', {
+            /*status = await fetch('/api/getreportstatus', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
 
@@ -172,22 +183,29 @@ async function checkstatus(
                 .catch((data) => {
                     return { status: { status: 'invalid_user' } };
                 });
+*/
 
-
-            if (status.status.status == 'invalid_user') {
-                delete router.query.request_id;
-                router.push(router);
-                setIsValidating(false);
-                setIsLoggingIn(false);
-                setFinalReport({});
-                break;
-            }
-            if (status.status == 'PROCESSING') {
+            
+            if (status.status.status == 'PROCESSING') {
                 await timer(2000);
             }
-            if (status.status == 'SUCCESS') {
+            else if (status.status.status == 'SUCCESS') {
                 console.log('Successfully processed App');
-                fetch('/api/getreport', {
+
+
+                ipcRenderer.invoke('getreport',
+                {
+                    token: token,
+                    request_id: request_id,
+                })
+            
+                .then((json) => {
+                    setFinalReport(json);
+                    setIsValidating(false);
+                })
+
+
+               /* fetch('/api/getreport', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
 
@@ -205,8 +223,12 @@ async function checkstatus(
                     .then((json) => {
                         setFinalReport(json);
                         setIsValidating(false);
-                    });
+                    });*/
                 break;
+            }
+            else {
+                await timer(2000);
+                console.log(status)
             }
         }
     } else {
@@ -387,7 +409,6 @@ export default function Home() {
     }
   )
   .then((data) => {
-    console.log(data)
     setIsLoggingIn(false);
 
     if (data.data === undefined) {
@@ -491,8 +512,7 @@ export default function Home() {
         }
       )
       .then((data) => {
-        console.log(data)
-       /* router.query.request_id = data.request_id;
+        router.query.request_id = data.request_id;
         router.push(router);
         if (data.request_id) {
             setRequestId(data.request_id);
@@ -507,7 +527,7 @@ export default function Home() {
                 router,
                 setIsLoggingIn
             );
-        }*/
+        }
       })
     }
     
@@ -591,7 +611,25 @@ export default function Home() {
     const downloadReport = (e) => {
         e.preventDefault();
 
-        fetch('/api/getreporthtml', {
+
+        ipcRenderer.invoke('getreporthtml',
+            {
+                token: token,
+                request_id: request_id,
+            })
+            
+            .then((html) => {
+                const element = document.createElement('a');
+                const file = new Blob([html], {
+                    type: 'text/html',
+                });
+                element.href = URL.createObjectURL(file);
+                element.download = 'report.html';
+                document.body.appendChild(element); // Required for this to work in FireFox
+                element.click();
+            });
+
+       /* fetch('/api/getreporthtml', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
 
@@ -615,7 +653,7 @@ export default function Home() {
                 element.download = 'report.html';
                 document.body.appendChild(element); // Required for this to work in FireFox
                 element.click();
-            });
+            });*/
     };
 
     useEffect(() => {
