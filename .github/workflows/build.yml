@@ -3,8 +3,6 @@ name: 'Build Electron Apps'
 on:
   push:
     branches: [main]
-  release:
-    types: [created]
 
 jobs:
   release:
