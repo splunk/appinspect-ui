@@ -3,20 +3,26 @@ import dynamic from "next/dynamic";
 import List from "@splunk/react-ui/List";
 
 const Accordion = dynamic(() => import("@splunk/react-ui/Accordion"), {
-    ssr: false,
-  });
+  ssr: false,
+});
 
-  Accordion.Panel = dynamic(() => import('@splunk/react-ui/Accordion').then((mod) => mod.Panel), {
+Accordion.Panel = dynamic(
+  () => import("@splunk/react-ui/Accordion").then((mod) => mod.Panel),
+  {
     ssr: false,
-  });
+  }
+);
 
-  const TabLayout = dynamic(() => import("@splunk/react-ui/TabLayout"), {
-    ssr: false,
-  });
+const TabLayout = dynamic(() => import("@splunk/react-ui/TabLayout"), {
+  ssr: false,
+});
 
-  TabLayout.Panel = dynamic(() => import('@splunk/react-ui/TabLayout').then((mod) => mod.Panel), {
+TabLayout.Panel = dynamic(
+  () => import("@splunk/react-ui/TabLayout").then((mod) => mod.Panel),
+  {
     ssr: false,
-  });
+  }
+);
 
 export default function AppinspectReportTab(props) {
   return (
