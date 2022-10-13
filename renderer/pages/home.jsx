@@ -473,8 +473,15 @@ export default function Home() {
         setUploadError(null);
     };
 
-    const handleSelectTags = (e, { values }) => {
-        setSelectedTags(values);
+    const handleSelectTags = (e) => {
+        var tags_array = []
+        for (var tag in selectedTags)
+        {
+            console.log(selectedTags[tag])
+            tags_array.push(selectedTags[tag].name)
+        }
+        console.log(tags_array)
+        setSelectedTags(tags_array);
     };
 
     //How to logout
@@ -628,32 +635,6 @@ export default function Home() {
                 document.body.appendChild(element); // Required for this to work in FireFox
                 element.click();
             });
-
-       /* fetch('/api/getreporthtml', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-
-            body: JSON.stringify({
-                token: token,
-                request_id: requestId,
-            }),
-        })
-            .then((res) => {
-                if (res.ok) {
-                    return res.text();
-                }
-                throw res;
-            })
-            .then((html) => {
-                const element = document.createElement('a');
-                const file = new Blob([html], {
-                    type: 'text/html',
-                });
-                element.href = URL.createObjectURL(file);
-                element.download = 'report.html';
-                document.body.appendChild(element); // Required for this to work in FireFox
-                element.click();
-            });*/
     };
 
     useEffect(() => {
