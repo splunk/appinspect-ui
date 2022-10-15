@@ -2,7 +2,7 @@
   "private": true,
   "name": "appinspect-ui",
   "description": "UI for Appinspect",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "Ryan O'Connor, Steve McMaster",
   "main": "app/background.js",
   "scripts": {
