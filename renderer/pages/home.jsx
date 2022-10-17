@@ -16,6 +16,7 @@ import { useRouter } from "next/router";
 import { isMobile } from "react-device-detect";
 import NoSSR from "react-no-ssr";
 import { ipcRenderer } from "electron";
+import json from "../../package.json";
 
 function Heart() {
   return (
@@ -1493,6 +1494,9 @@ export default function Home() {
                   >
                     Splunk UI
                   </Link>
+                </P>
+                <P style={{ margin: "auto", textAlign: "center" }}>
+                  v{json.version}
                 </P>
               </td>
             </tr>
