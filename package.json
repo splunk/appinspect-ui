@@ -8,10 +8,7 @@
   "scripts": {
     "dev": "nextron",
     "build": "nextron build --publish always",
-    "build:win32": "nextron build --win --ia32",
-    "postinstall": "electron-builder install-app-deps",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "build:win32": "nextron build --win --ia32"
   },
   "dependencies": {
     "@splunk/react-icons": "^3.2.0",
