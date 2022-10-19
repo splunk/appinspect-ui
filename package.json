@@ -2,13 +2,12 @@
   "private": true,
   "name": "appinspect-ui",
   "description": "UI for Appinspect",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "author": "Ryan O'Connor, Steve McMaster",
   "main": "app/background.js",
   "scripts": {
     "dev": "nextron",
-    "build": "nextron build --publish always",
-    "build:win32": "nextron build --win --ia32",
+    "build": "nextron build",
     "postinstall": "electron-builder install-app-deps",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
