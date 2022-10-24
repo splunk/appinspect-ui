@@ -1,0 +1,20 @@
+department,related to,name,license period,material / not material,license type,link,remote version,installed version,defined version,author
+kessler,stuff,@splunk/react-icons,perpetual,material,Apache-2.0,https://registry.npmjs.org/@splunk/react-icons/-/react-icons-3.2.0.tgz,3.2.0,3.2.0,^3.2.0,Splunk Inc.
+kessler,stuff,@splunk/react-ui,perpetual,material,Apache-2.0,https://registry.npmjs.org/@splunk/react-ui/-/react-ui-4.12.1.tgz,4.12.1,4.12.1,4.12.1,Splunk Inc.
+kessler,stuff,@splunk/themes,perpetual,material,Apache-2.0,https://registry.npmjs.org/@splunk/themes/-/themes-0.13.0.tgz,0.13.0,0.13.0,^0.13.0,Splunk Inc.
+kessler,stuff,cookies-next,perpetual,material,MIT,git+https://github.com/andreizanik/cookies-next.git,2.1.1,2.1.1,^2.1.1,Andrei Zanouski andreizanik@gmail.com
+kessler,stuff,electron-serve,perpetual,material,MIT,git+https://github.com/sindresorhus/electron-serve.git,1.1.0,1.1.0,^1.1.0,Sindre Sorhus sindresorhus@gmail.com sindresorhus.com
+kessler,stuff,electron-store,perpetual,material,MIT,git+https://github.com/sindresorhus/electron-store.git,8.1.0,8.1.0,^8.1.0,Sindre Sorhus sindresorhus@gmail.com https://sindresorhus.com
+kessler,stuff,form-data-encoder,perpetual,material,MIT,git+https://github.com/octet-stream/form-data-encoder.git,1.7.2,1.7.2,^1.7.0,Nick K.
+kessler,stuff,formdata-node,perpetual,material,MIT,git+https://github.com/octet-stream/form-data.git,4.4.1,4.4.1,^4.0.0,Nick K. <io@octetstream.me>
+kessler,stuff,multiselect-react-dropdown,perpetual,material,MIT,git+https://github.com/srigar/multiselect-react-dropdown.git,2.0.25,2.0.25,^2.0.25,srigar s
+kessler,stuff,node-fetch,perpetual,material,MIT,git+https://github.com/bitinn/node-fetch.git,2.6.7,2.6.7,^2.0.0,David Frank
+kessler,stuff,react-device-detect,perpetual,material,MIT,git+https://github.com/duskload/react-device-detect.git,2.2.2,2.2.2,^2.2.2,Michael Laktionov duskload@gmail.com
+kessler,stuff,react-no-ssr,perpetual,material,MIT,git+https://github.com/kadirahq/react-no-ssr.git,1.1.0,1.1.0,^1.1.0,n/a
+kessler,stuff,styled-components,perpetual,material,MIT,git+https://github.com/styled-components/styled-components.git,5.3.6,5.3.6,^5.3.6,Glen Maddern
+kessler,stuff,electron,perpetual,material,MIT,git+https://github.com/electron/electron.git,20.3.3,20.3.2,^20.1.0,Electron Community
+kessler,stuff,electron-builder,perpetual,material,MIT,git+https://github.com/electron-userland/electron-builder.git,23.6.0,23.6.0,^23.3.3,Vladimir Krivosheev
+kessler,stuff,next,perpetual,material,MIT,git+https://github.com/vercel/next.js.git,12.3.1,12.3.1,^12.0.0,n/a
+kessler,stuff,nextron,perpetual,material,MIT,git+ssh://git@github.com/saltyshiomix/nextron.git,8.2.0,8.2.0,^8.2.0,Shiono Yoshihide <shiono.yoshihide@gmail.com>
+kessler,stuff,react,perpetual,material,MIT,git+https://github.com/facebook/react.git,16.14.0,16.14.0,^16.0.0,n/a
+kessler,stuff,react-dom,perpetual,material,MIT,git+https://github.com/facebook/react.git,16.14.0,16.14.0,^16.0.0,n/a
