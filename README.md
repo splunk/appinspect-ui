@@ -1,4 +1,4 @@
-# Appinspect UI
+# Splunk Appinspect UI
 
 This app is created by Ryan O'Connor and Steve McMaster.
 
