@@ -1,4 +1,4 @@
-import { screen, BrowserWindow, ipcMain } from "electron";
+import { screen, BrowserWindow, ipcMain, nativeTheme } from "electron";
 import Store from "electron-store";
 import { FormData } from "formdata-node";
 import { Readable } from "stream";
@@ -67,6 +67,10 @@ ipcMain.handle("auth", async (event, ...args) => {
   });
   var result = await result.json();
   return result;
+});
+
+ipcMain.handle("shouldusedark", async (event, ...args) => {
+  return nativeTheme.shouldUseDarkColors;
 });
 
 ipcMain.handle("getreporthtml", async (event, ...args) => {
@@ -199,9 +203,15 @@ export default function createWindow(windowName, options) {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      ...options.webPreferences,
+      additionalArguments: ["--darkmode=" + nativeTheme.shouldUseDarkColors],
     },
   });
+
+  if (nativeTheme.shouldUseDarkColors) {
+    win.setBackgroundColor("#000");
+  } else {
+    win.setBackgroundColor("#FFF");
+  }
 
   win.on("close", saveState);
 
