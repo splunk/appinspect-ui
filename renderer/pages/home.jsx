@@ -306,19 +306,21 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    if (window.process.argv.slice(-1)[0].split("=")[1] == "true") {
+      setMode("dark");
+    }
+    if (window.process.argv.slice(-1)[0].split("=")[1] == "false") {
+      setMode("light");
+    }
+  }, []);
+
   //This handles dark and light theme of system
   useEffect(() => {
     // Add listener to update styles
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => setMode(e.matches ? "dark" : "light"));
 
     // Setup dark/light mode for the first time
-    setMode(
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-    );
+    //setMode(nativeTheme.shouldUseDarkColors ? "dark" : "light");
 
     // Load token from cookie
     var cookieToken = getCookie("token");
@@ -333,13 +335,6 @@ export default function Home() {
         deleteCookie("token");
       }
     }
-
-    // Remove listener
-    return () => {
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .removeEventListener("change", () => {});
-    };
   }, []);
 
   //Update Password as users are typing
