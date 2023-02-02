@@ -499,7 +499,7 @@ export default function Home() {
   //What to do if a user wants to upload a new app.
   const emailAppinspect = (e) => {
     e.preventDefault();
-    window.location.href = "mailto:appinspect@splunk.comn";
+    window.location.href = "mailto:appinspect@splunk.com";
   };
   //What to do if a user wants to upload a new app.
   const downloadReport = (e) => {
